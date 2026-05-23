@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Threat — ThreatLens</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg': '#080b10',
+            'tl-surface': '#111820',
+            'tl-surface-2': '#0d1218',
+            'tl-border': '#1a2332',
+            'tl-red': '#ff2d2d',
+            'tl-cyan': '#00e5ff',
+            'tl-orange': '#ff7c2d',
+            'tl-green': '#00ff9c',
+            'tl-yellow': '#ffc107',
+            'tl-muted': '#5a6070',
+            'tl-text': '#e8eaf0',
+            'tl-text-dim': '#8a90a0',
+          },
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'mono': ['Share Tech Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { font-family: 'Syne', sans-serif; }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #ff2d2d;
+      box-shadow: 0 0 0 3px rgba(255,45,45,0.1);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+
+    .scanline-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    }
+
+    .spinner {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body class="bg-tl-bg text-tl-text min-h-screen font-syne">
+
+<!-- Scanline Overlay -->
+<div class="scanline-overlay"></div>
+
+<!-- NAVBAR -->
+<header class="sticky top-0 z-50 bg-tl-bg/90 backdrop-blur-xl border-b border-tl-border">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tl-red/10 border border-tl-red/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-tl-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-tl-red tracking-wider">THREATLENS</h1>
+          <p class="text-[9px] text-tl-muted font-mono tracking-[0.2em] -mt-0.5">SEE THROUGH EVERY THREAT</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="../feed.html" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Kembali ke Feed
+        </a>
+        <button onclick="logout()" class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+
+  <!-- Header -->
+  <div class="mb-8 fade-in-up">
+    <div class="font-mono text-xs text-tl-red tracking-widest uppercase mb-3">// submit laporan</div>
+    <h2 class="text-3xl font-extrabold mb-2">Laporkan Ancaman</h2>
+    <p class="text-tl-text-dim text-sm">Temukan ancaman siber? Laporkan ke komunitas ThreatLens untuk diverifikasi bersama.</p>
+  </div>
+
+  <!-- Notifikasi error -->
+  <div id="error-box" class="hidden mb-6 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 flex items-center gap-3">
+    <svg class="w-5 h-5 text-tl-red shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <p id="error-msg" class="text-tl-red text-sm font-mono"></p>
+  </div>
+
+  <!-- Notifikasi sukses -->
+  <div id="success-box" class="hidden mb-6 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3 flex items-center gap-3">
+    <svg class="w-5 h-5 text-tl-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <p id="success-msg" class="text-tl-green text-sm font-mono"></p>
+  </div>
+
+  <!-- Form card -->
+  <div class="bg-tl-surface border border-tl-border rounded-2xl p-6 sm:p-8 fade-in-up space-y-6">
+
+    <!-- Tipe Indicator -->
+    <div>
+      <label class="block text-sm font-semibold mb-2">Tipe Indikator</label>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="type-selector">
+        <button onclick="selectType('url', this)" class="type-btn active px-3 py-2.5 rounded-lg text-xs font-mono border border-tl-red/40 bg-tl-red/10 text-tl-red transition-all">🌐 URL</button>
+        <button onclick="selectType('ip', this)" class="type-btn px-3 py-2.5 rounded-lg text-xs font-mono border border-tl-border bg-tl-surface-2 text-tl-text-dim hover:border-tl-red/30 transition-all">📡 IP Address</button>
+        <button onclick="selectType('hash', this)" class="type-btn px-3 py-2.5 rounded-lg text-xs font-mono border border-tl-border bg-tl-surface-2 text-tl-text-dim hover:border-tl-red/30 transition-all">🔑 File Hash</button>
+        <button onclick="selectType('domain', this)" class="type-btn px-3 py-2.5 rounded-lg text-xs font-mono border border-tl-border bg-tl-surface-2 text-tl-text-dim hover:border-tl-red/30 transition-all">🏷️ Domain</button>
+      </div>
+      <input type="hidden" id="type" value="url"/>
+    </div>
+
+    <!-- Judul -->
+    <div>
+      <label class="block text-sm font-semibold mb-2">Judul Laporan</label>
+      <input
+        id="title"
+        type="text"
+        placeholder="contoh: Situs phishing menyamar sebagai BCA"
+        class="input-field w-full bg-tl-bg border border-tl-border rounded-xl px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all"
+      />
+    </div>
+
+    <!-- Indikator -->
+    <div>
+      <label class="block text-sm font-semibold mb-2">Indikator <span class="text-tl-muted font-normal">(URL / IP / Hash / Domain)</span></label>
+      <input
+        id="indicator"
+        type="text"
+        placeholder="contoh: phishing-site.com atau 192.168.1.1"
+        class="input-field w-full bg-tl-bg border border-tl-border rounded-xl px-4 py-3 text-sm text-tl-text placeholder-tl-muted font-mono transition-all"
+      />
+    </div>
+
+    <!-- Kategori -->
+    <div>
+      <label class="block text-sm font-semibold mb-2">Kategori Ancaman</label>
+      <select id="category" class="input-field w-full bg-tl-bg border border-tl-border rounded-xl px-4 py-3 text-sm text-tl-text transition-all">
+        <option value="phishing">🎣 Phishing</option>
+        <option value="malware">🦠 Malware</option>
+        <option value="ransomware">🔒 Ransomware</option>
+        <option value="spam">📧 Spam</option>
+        <option value="other">⚠️ Lainnya</option>
+      </select>
+    </div>
+
+    <!-- Deskripsi -->
+    <div>
+      <label class="block text-sm font-semibold mb-2">Deskripsi Ancaman</label>
+      <textarea
+        id="description"
+        rows="4"
+        placeholder="Jelaskan ancaman secara detail — bagaimana cara kerjanya, siapa yang terdampak, dll."
+        class="input-field w-full bg-tl-bg border border-tl-border rounded-xl px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all resize-none"
+      ></textarea>
+      <p class="text-xs text-tl-muted mt-1.5 font-mono">Minimal 20 karakter</p>
+    </div>
+
+    <!-- Info box -->
+    <div class="bg-tl-cyan/5 border border-tl-cyan/20 rounded-xl p-4 flex gap-3">
+      <svg class="w-5 h-5 text-tl-cyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <p class="text-xs text-tl-text-dim leading-relaxed">Laporan kamu akan langsung masuk ke feed komunitas dan dapat diverifikasi oleh anggota lain melalui sistem voting.</p>
+    </div>
+
+    <!-- Tombol submit -->
+    <button
+      onclick="submitThreat()"
+      id="submit-btn"
+      class="w-full bg-tl-red hover:bg-red-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 text-sm tracking-wide"
+      onmouseover="this.style.boxShadow='0 0 25px rgba(255,45,45,0.4)'"
+      onmouseout="this.style.boxShadow='none'"
+    >
+      <div class="spinner" id="spinner"></div>
+      <span id="btn-text">Submit Laporan →</span>
+    </button>
+
+  </div>
+</div>
+
+<script>
+  // Pilih tipe indicator
+  let selectedType = 'url';
+
+  function selectType(type, el) {
+    selectedType = type;
+    document.getElementById('type').value = type;
+    document.querySelectorAll('.type-btn').forEach(btn => {
+      btn.classList.remove('active', 'border-tl-red/40', 'bg-tl-red/10', 'text-tl-red');
+      btn.classList.add('border-tl-border', 'bg-tl-surface-2', 'text-tl-text-dim');
+    });
+    el.classList.add('active', 'border-tl-red/40', 'bg-tl-red/10', 'text-tl-red');
+    el.classList.remove('border-tl-border', 'bg-tl-surface-2', 'text-tl-text-dim');
+
+    // Update placeholder indikator sesuai tipe
+    const placeholders = {
+      url: 'contoh: http://phishing-site.com/login',
+      ip: 'contoh: 192.168.1.1 atau 103.21.244.0/24',
+      hash: 'contoh: a1b2c3d4e5f6... (MD5/SHA256)',
+      domain: 'contoh: malicious-domain.com'
+    };
+    document.getElementById('indicator').placeholder = placeholders[type];
+  }
+
+  function showError(msg) {
+    document.getElementById('success-box').classList.add('hidden');
+    document.getElementById('error-msg').textContent = '⚠ ' + msg;
+    document.getElementById('error-box').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showSuccess(msg) {
+    document.getElementById('error-box').classList.add('hidden');
+    document.getElementById('success-msg').textContent = '✓ ' + msg;
+    document.getElementById('success-box').classList.remove('hidden');
+  }
+
+  function setLoading(loading) {
+    const btn     = document.getElementById('submit-btn');
+    const spinner = document.getElementById('spinner');
+    const text    = document.getElementById('btn-text');
+    if (loading) {
+      btn.disabled = true;
+      btn.classList.add('opacity-70', 'cursor-not-allowed');
+      spinner.style.display = 'block';
+      text.textContent = 'Mengirim...';
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('opacity-70', 'cursor-not-allowed');
+      spinner.style.display = 'none';
+      text.textContent = 'Submit Laporan →';
+    }
+  }
+
+  async function submitThreat() {
+    const token       = localStorage.getItem('token');
+    const title       = document.getElementById('title').value.trim();
+    const indicator   = document.getElementById('indicator').value.trim();
+    const type        = document.getElementById('type').value;
+    const category    = document.getElementById('category').value;
+    const description = document.getElementById('description').value.trim();
+
+    // Validasi
+    if (!title) {
+      showError('Judul laporan wajib diisi.');
+      return;
+    }
+    if (!indicator) {
+      showError('Indikator wajib diisi.');
+      return;
+    }
+    if (description.length < 20) {
+      showError('Deskripsi minimal 20 karakter.');
+      return;
+    }
+    if (!token) {
+      showError('Kamu harus login terlebih dahulu.');
+      setTimeout(() => { window.location.href = '../login.html'; }, 1500);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/threats', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        // 🔥 TAMBAHKAN status: 'pending'
+        body: JSON.stringify({ 
+          title, 
+          indicator, 
+          type, 
+          category, 
+          description,
+          status: 'pending'  // Status awal menunggu vote komunitas
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showError(data.message || 'Gagal submit. Coba lagi.');
+        setLoading(false);
+        return;
+      }
+
+      // Berhasil
+      showSuccess('Laporan berhasil disubmit! Mengalihkan ke feed...');
+      localStorage.setItem('notif', '✓ Laporan ancaman berhasil disubmit!');
+
+      setTimeout(() => {
+        window.location.href = '../feed.html';
+      }, 1500);
+
+    } catch (err) {
+      showError('Tidak dapat terhubung ke server. Pastikan server berjalan.');
+      setLoading(false);
+    }
+}
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = '../login.html';
+  }
+
+  // Cek login
+  window.addEventListener('load', () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = '../login.html';
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ThreatLens — See Through Every Threat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a href="#" class="nav-logo">⬡ Threat<span>Lens</span></a>
+    <ul class="nav-links">
+      <li><a href="#cara-kerja">Cara Kerja</a></li>
+      <li><a href="#fitur">Fitur</a></li>
+      <li><a href="#feed">Feed Ancaman</a></li>
+      <li><a href="pages/login.html">Masuk</a></li>
+      <li><a href="pages/register.html" class="nav-cta">Daftar Gratis</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🔴 LIVE — Feed Ancaman Real-Time Aktif</div>
+      <h1>
+        Deteksi Ancaman Siber<br/>
+        Bersama <span class="accent">Komunitas</span>
+      </h1>
+      <p class="hero-sub">
+        Platform crowdsourced pertama di Indonesia untuk melaporkan, memverifikasi, dan memantau ancaman siber secara kolektif dan real-time.
+      </p>
+      <div class="hero-actions">
+        <a href="pages/register.html" class="btn-primary">Mulai Berkontribusi →</a>
+        <a href="#cara-kerja" class="btn-secondary">Lihat Cara Kerja</a>
+      </div>
+      <div class="hero-terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot"></div>
+          <div class="terminal-dot"></div>
+          <div class="terminal-dot"></div>
+          <span class="terminal-title">threatlens — threat analysis</span>
+        </div>
+        <div class="terminal-body">
+          <div class="t-line"><span class="t-prompt">›</span><span class="t-cmd">scan --url "http://paypa1-secure-login.xyz"</span></div>
+          <div class="t-output">Menghubungkan ke VirusTotal API...</div>
+          <div class="t-output">Memeriksa database komunitas...</div>
+          <div class="t-warn">⚠ Ditemukan di 47 laporan komunitas</div>
+          <div class="t-output">Hasil scan: 38/72 antivirus mendeteksi ancaman</div>
+          <div class="t-line" style="margin-top:4px"><span class="t-prompt">›</span><span class="t-cmd">status --threat-level</span></div>
+          <div class="t-success">🔴 BERBAHAYA — Phishing (Kepercayaan: 94%)</div>
+          <div class="t-line" style="margin-top:4px"><span class="t-prompt">›</span><span class="t-cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-item">
+      <span class="stat-num">12,847</span>
+      <span class="stat-label">Ancaman Dilaporkan</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">3,291</span>
+      <span class="stat-label">Anggota Aktif</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">98.2%</span>
+      <span class="stat-label">Akurasi Verifikasi</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">24/7</span>
+      <span class="stat-label">Pemantauan Real-Time</span>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="cara-kerja">
+    <div class="section-tag">// cara kerja</div>
+    <h2 class="section-title">Sederhana. Kolektif. Efektif.</h2>
+    <p class="section-sub">Tiga langkah mudah untuk berkontribusi dalam menjaga keamanan siber bersama.</p>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01 // LAPORKAN</div>
+        <div class="step-icon">📡</div>
+        <h3>Temukan & Laporkan</h3>
+        <p>Temukan URL mencurigakan, IP berbahaya, atau file berbahaya? Laporkan ke ThreatLens dalam hitungan detik. Sistem kami otomatis scan ke VirusTotal.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02 // VERIFIKASI</div>
+        <div class="step-icon">🗳️</div>
+        <h3>Komunitas Memverifikasi</h3>
+        <p>Anggota komunitas berpengalaman ikut voting dan berkomentar. Sistem Weighted Trust memastikan suara dari user veteran lebih berbobot.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03 // LINDUNGI</div>
+        <div class="step-icon">🛡️</div>
+        <h3>Semua Terlindungi</h3>
+        <p>Hasil verifikasi langsung masuk ke feed real-time. Komunitas mendapat peringatan dini, ancaman teridentifikasi, semua terlindungi.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE FEED PREVIEW -->
+  <section class="section" id="feed" style="padding-top:0">
+    <div class="section-tag">// live feed</div>
+    <h2 class="section-title">Feed Ancaman Real-Time</h2>
+    <p class="section-sub">Laporan terbaru dari komunitas, diperbarui setiap detik.</p>
+    <div class="feed-preview">
+      <div class="feed-header">
+        <div class="feed-title">
+          <div class="live-dot"></div>
+          LIVE THREAT FEED
+        </div>
+        <span style="font-family:var(--mono);font-size:0.72rem;color:var(--muted)">247 laporan hari ini</span>
+      </div>
+      <div class="feed-item">
+        <span class="threat-badge badge-danger">BERBAHAYA</span>
+        <span class="feed-indicator">http://paypa1-secure-login.xyz/verify</span>
+        <div class="vote-bar"><div class="vote-fill" style="width:94%"></div></div>
+        <span class="feed-votes">94% • 128 vote</span>
+      </div>
+      <div class="feed-item">
+        <span class="threat-badge badge-danger">BERBAHAYA</span>
+        <span class="feed-indicator">185.220.101.47</span>
+        <div class="vote-bar"><div class="vote-fill" style="width:88%"></div></div>
+        <span class="feed-votes">88% • 74 vote</span>
+      </div>
+      <div class="feed-item">
+        <span class="threat-badge badge-warn">MENCURIGAKAN</span>
+        <span class="feed-indicator">free-robux-generator2024.com</span>
+        <div class="vote-bar"><div class="vote-fill" style="width:61%;background:var(--orange)"></div></div>
+        <span class="feed-votes">61% • 43 vote</span>
+      </div>
+      <div class="feed-item">
+        <span class="threat-badge badge-danger">BERBAHAYA</span>
+        <span class="feed-indicator">a1b2c3d4e5f6.exe (SHA256: 3d94...)</span>
+        <div class="vote-bar"><div class="vote-fill" style="width:97%"></div></div>
+        <span class="feed-votes">97% • 201 vote</span>
+      </div>
+      <div class="feed-item">
+        <span class="threat-badge badge-safe">AMAN</span>
+        <span class="feed-indicator">github.com/nodejs/node</span>
+        <div class="vote-bar"><div class="vote-fill" style="width:5%;background:#28c840"></div></div>
+        <span class="feed-votes">5% • 89 vote</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="fitur" style="padding-top:0">
+    <div class="section-tag">// fitur</div>
+    <h2 class="section-title">Dirancang untuk Keamanan Nyata</h2>
+    <p class="section-sub">Setiap fitur dibangun dengan mempertimbangkan ancaman manipulasi dan keandalan data.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚖️</div>
+        <div>
+          <h3>Weighted Trust Voting</h3>
+          <p>Tidak semua suara sama. User veteran dengan reputasi tinggi memiliki bobot vote lebih besar — mencegah manipulasi akun bot.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔬</div>
+        <div>
+          <h3>Integrasi VirusTotal</h3>
+          <p>Setiap laporan otomatis dicek ke 70+ antivirus engine melalui VirusTotal API. Data teknis tersedia transparan untuk semua user.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div>
+          <h3>Notifikasi Real-Time</h3>
+          <p>Feed ancaman diperbarui secara langsung menggunakan Socket.io. Tidak perlu refresh — ancaman baru muncul otomatis.</p>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏅</div>
+        <div>
+          <h3>Sistem Reputasi & Badge</h3>
+          <p>Kontribusimu dihargai. Kumpulkan poin reputasi dan raih badge seperti "Threat Hunter" atau "Top Contributor".</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Bergabunglah dengan Komunitas<br/><span style="color:var(--red)">Pemburu Ancaman</span></h2>
+    <p>Gratis selamanya. Daftar sekarang dan mulai berkontribusi.</p>
+    <a href="pages/register.html" class="btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">Daftar Sekarang — Gratis →</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">⬡ Threat<span>Lens</span> — See Through Every Threat</div>
+    <div class="footer-text">© 2024 ThreatLens. Dibuat untuk keamanan bersama.</div>
+  </footer>
+
+</body>
+</html>

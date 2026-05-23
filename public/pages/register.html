@@ -1,0 +1,395 @@
+  <!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daftar — ThreatLens</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg':      '#080b10',
+            'tl-surface': '#111820',
+            'tl-border':  '#1a2332',
+            'tl-red':     '#ff2d2d',
+            'tl-cyan':    '#00e5ff',
+            'tl-muted':   '#5a6070',
+            'tl-text':    '#e8eaf0',
+          },
+          fontFamily: {
+            mono: ['Share Tech Mono', 'monospace'],
+            sans: ['Syne', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Syne', sans-serif; }
+
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,45,45,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,45,45,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(50px); }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #ff2d2d;
+      box-shadow: 0 0 0 3px rgba(255,45,45,0.1);
+    }
+
+    .spinner {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .strength-bar {
+      height: 4px;
+      border-radius: 2px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-tl-bg text-tl-text min-h-screen flex items-center justify-center overflow-auto py-10">
+
+  <!-- Background grid animasi -->
+  <div class="grid-bg fixed inset-0 z-0 opacity-50"></div>
+
+  <!-- Efek cahaya merah -->
+  <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full z-0"
+       style="background: radial-gradient(circle, rgba(255,45,45,0.06) 0%, transparent 70%);">
+  </div>
+
+  <!-- Konten utama -->
+  <div class="relative z-10 w-full max-w-md px-6 fade-up">
+
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="../../index.html" class="font-mono text-2xl text-tl-red hover:opacity-80 transition-opacity inline-block">
+        ⬡ Threat<span class="text-tl-text">Lens</span>
+      </a>
+    </div>
+
+    <!-- Card form -->
+    <div class="bg-tl-surface border border-tl-border rounded-2xl p-8">
+
+      <!-- Header form -->
+      <div class="mb-6">
+        <div class="font-mono text-xs text-tl-red tracking-widest uppercase mb-3">
+          // daftar akun baru
+        </div>
+        <h2 class="text-2xl font-extrabold mb-2">Bergabung dengan ThreatLens</h2>
+        <p class="text-tl-muted text-sm">
+          Sudah punya akun?
+          <a href="login.html" class="text-tl-red hover:underline font-semibold">Masuk di sini</a>
+        </p>
+      </div>
+
+      <!-- Notifikasi error -->
+      <div id="error-box" class="hidden mb-5 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
+        <p id="error-msg" class="text-tl-red text-sm font-mono"></p>
+      </div>
+
+      <!-- Notifikasi sukses -->
+      <div id="success-box" class="hidden mb-5 bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3">
+        <p id="success-msg" class="text-green-400 text-sm font-mono"></p>
+      </div>
+
+      <!-- Form register -->
+      <div class="space-y-4">
+
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-tl-text">Username</label>
+          <input
+            id="username"
+            type="text"
+            placeholder="username kamu"
+            class="input-field w-full bg-tl-bg border border-tl-border rounded-lg px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all duration-200"
+          />
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-tl-text">Email</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="kamu@email.com"
+            class="input-field w-full bg-tl-bg border border-tl-border rounded-lg px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all duration-200"
+          />
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-tl-text">Password</label>
+          <div class="relative">
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              oninput="checkStrength()"
+              class="input-field w-full bg-tl-bg border border-tl-border rounded-lg px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all duration-200 pr-12"
+            />
+            <button
+              onclick="togglePassword('password', 'toggle-icon-1')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-tl-muted hover:text-tl-text transition-colors text-lg"
+              id="toggle-icon-1"
+            >👁</button>
+          </div>
+          <!-- Password strength bar -->
+          <div class="mt-2 space-y-1">
+            <div class="flex gap-1">
+              <div class="flex-1 h-1 rounded bg-tl-border" id="bar1"></div>
+              <div class="flex-1 h-1 rounded bg-tl-border" id="bar2"></div>
+              <div class="flex-1 h-1 rounded bg-tl-border" id="bar3"></div>
+              <div class="flex-1 h-1 rounded bg-tl-border" id="bar4"></div>
+            </div>
+            <p id="strength-text" class="text-xs text-tl-muted font-mono"></p>
+          </div>
+        </div>
+
+        <!-- Konfirmasi Password -->
+        <div>
+          <label class="block text-sm font-semibold mb-2 text-tl-text">Konfirmasi Password</label>
+          <div class="relative">
+            <input
+              id="confirm-password"
+              type="password"
+              placeholder="••••••••"
+              class="input-field w-full bg-tl-bg border border-tl-border rounded-lg px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all duration-200 pr-12"
+            />
+            <button
+              onclick="togglePassword('confirm-password', 'toggle-icon-2')"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-tl-muted hover:text-tl-text transition-colors text-lg"
+              id="toggle-icon-2"
+            >👁</button>
+          </div>
+        </div>
+
+        <!-- Tombol daftar -->
+        <button
+          onclick="handleRegister()"
+          id="register-btn"
+          class="w-full bg-tl-red hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 text-sm tracking-wide mt-2"
+          onmouseover="this.style.boxShadow='0 0 25px rgba(255,45,45,0.4)'"
+          onmouseout="this.style.boxShadow='none'"
+        >
+          <div class="spinner" id="spinner"></div>
+          <span id="btn-text">Daftar Sekarang →</span>
+        </button>
+
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center gap-4 my-5">
+        <div class="flex-1 h-px bg-tl-border"></div>
+        <span class="text-tl-muted text-xs font-mono">atau</span>
+        <div class="flex-1 h-px bg-tl-border"></div>
+      </div>
+
+      <!-- Link login -->
+      <a href="login.html"
+         class="w-full border border-tl-border hover:border-tl-red/50 text-tl-text font-semibold py-3 px-6 rounded-lg transition-all duration-200 text-sm text-center block hover:bg-tl-red/5">
+        Sudah Punya Akun? Masuk
+      </a>
+
+    </div>
+
+    <!-- Footer kecil -->
+    <p class="text-center text-tl-muted text-xs mt-6 font-mono">
+      © 2024 ThreatLens — See Through Every Threat
+    </p>
+
+  </div>
+
+  <script>
+    // Toggle show/hide password
+    function togglePassword(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        icon.textContent = '👁';
+      }
+    }
+
+    // Cek kekuatan password
+    function checkStrength() {
+      const password = document.getElementById('password').value;
+      const bars = ['bar1', 'bar2', 'bar3', 'bar4'];
+      const text = document.getElementById('strength-text');
+
+      // Reset semua bar
+      bars.forEach(b => {
+        document.getElementById(b).style.background = '#1a2332';
+      });
+
+      if (password.length === 0) {
+        text.textContent = '';
+        return;
+      }
+
+      let score = 0;
+      if (password.length >= 8) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^A-Za-z0-9]/.test(password)) score++;
+
+      const colors = ['#ff2d2d', '#ff7c2d', '#ffc107', '#00ff9c'];
+      const labels = ['Sangat Lemah', 'Lemah', 'Sedang', 'Kuat'];
+
+      for (let i = 0; i < score; i++) {
+        document.getElementById(bars[i]).style.background = colors[score - 1];
+      }
+
+      text.textContent = labels[score - 1] || '';
+      text.style.color = colors[score - 1] || '#5a6070';
+    }
+
+    // Tampilkan pesan error
+    function showError(msg) {
+      document.getElementById('success-box').classList.add('hidden');
+      document.getElementById('error-msg').textContent = '⚠ ' + msg;
+      document.getElementById('error-box').classList.remove('hidden');
+    }
+
+    // Tampilkan pesan sukses
+    function showSuccess(msg) {
+      document.getElementById('error-box').classList.add('hidden');
+      document.getElementById('success-msg').textContent = '✓ ' + msg;
+      document.getElementById('success-box').classList.remove('hidden');
+    }
+
+    // Set loading state
+    function setLoading(loading) {
+      const btn     = document.getElementById('register-btn');
+      const spinner = document.getElementById('spinner');
+      const text    = document.getElementById('btn-text');
+      if (loading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+        spinner.style.display = 'block';
+        text.textContent = 'Memproses...';
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        spinner.style.display = 'none';
+        text.textContent = 'Daftar Sekarang →';
+      }
+    }
+
+    // Handle register
+    async function handleRegister() {
+      const username        = document.getElementById('username').value.trim();
+      const email           = document.getElementById('email').value.trim();
+      const password        = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      // Validasi input
+      if (!username || !email || !password || !confirmPassword) {
+        showError('Semua field wajib diisi.');
+        return;
+      }
+
+      if (username.length < 3) {
+        showError('Username minimal 3 karakter.');
+        return;
+      }
+
+      if (!email.includes('@')) {
+        showError('Format email tidak valid.');
+        return;
+      }
+
+      if (password.length < 6) {
+        showError('Password minimal 6 karakter.');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showError('Password dan konfirmasi password tidak cocok.');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        // Kirim request ke backend
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showError(data.message || 'Registrasi gagal. Coba lagi.');
+          setLoading(false);
+          return;
+        }
+
+        // Registrasi berhasil
+        showSuccess('Akun berhasil dibuat! Mengalihkan ke halaman login...');
+
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+
+      } catch (err) {
+        showError('Tidak dapat terhubung ke server. Pastikan server berjalan.');
+        setLoading(false);
+      }
+    }
+
+    // Daftar dengan tekan Enter
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleRegister();
+    });
+
+    // Kalau sudah login, langsung redirect
+    window.addEventListener('load', () => {
+      const token = localStorage.getItem('token');
+      const user  = JSON.parse(localStorage.getItem('user') || 'null');
+      if (token && user) {
+        window.location.href = user.role === 'admin'
+          ? 'admin/dashboard.html'
+          : 'user/dashboard_user.html';
+      }
+    });
+  </script>
+</body>
+</html>

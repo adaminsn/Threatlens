@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Riwayat Verifikasi — ThreatLens Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg': '#080b10',
+            'tl-surface': '#111820',
+            'tl-surface-2': '#0d1218',
+            'tl-border': '#1a2332',
+            'tl-border-light': '#253042',
+            'tl-red': '#ff2d2d',
+            'tl-red-dim': '#ff2d2d33',
+            'tl-cyan': '#00e5ff',
+            'tl-cyan-dim': '#00e5ff33',
+            'tl-orange': '#ff7c2d',
+            'tl-orange-dim': '#ff7c2d33',
+            'tl-green': '#00ff9c',
+            'tl-green-dim': '#00ff9c33',
+            'tl-yellow': '#ffc107',
+            'tl-muted': '#5a6070',
+            'tl-text': '#e8eaf0',
+            'tl-text-dim': '#8a90a0',
+          },
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'mono': ['Share Tech Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #080b10; }
+    ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #253042; }
+
+    .scanline-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; z-index: 9999;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    }
+
+    .nav-glow:hover { text-shadow: 0 0 10px rgba(255,45,45,0.5); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-2px); border-color: rgba(255,45,45,0.4); }
+    
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .stat-card.purple::before { background: linear-gradient(90deg, transparent, #a855f7, transparent); }
+    .stat-card.blue::before { background: linear-gradient(90deg, transparent, #3b82f6, transparent); }
+    .stat-card.green::before { background: linear-gradient(90deg, transparent, #22c55e, transparent); }
+    .stat-card.orange::before { background: linear-gradient(90deg, transparent, #f97316, transparent); }
+
+    /* Modal Style */
+    .modal {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.open { display: flex; }
+    .modal-content {
+      background: rgba(17,24,32,0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,45,45,0.3);
+      border-radius: 20px;
+      max-width: 600px;
+      width: 90%;
+      padding: 24px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .verifier-item {
+      transition: all 0.2s ease;
+    }
+    .verifier-item:hover {
+      background: rgba(255,45,45,0.1);
+      transform: translateX(5px);
+    }
+  </style>
+</head>
+
+<body class="bg-tl-bg text-tl-text font-syne min-h-screen overflow-x-hidden">
+
+<div class="scanline-overlay"></div>
+
+<!-- NAVBAR -->
+<header class="sticky top-0 z-50 bg-tl-bg/90 backdrop-blur-xl border-b border-tl-border">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tl-red/10 border border-tl-red/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-tl-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-tl-red tracking-wider">THREATLENS</h1>
+          <p class="text-[9px] text-tl-muted font-mono tracking-[0.2em] -mt-0.5">ADMIN PANEL</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <a href="./dashboard_admin.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Dashboard
+        </a>
+        <a href="./reports.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Laporan
+        </a>
+        <a href="./users.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Users
+        </a>
+        <a href="./verifications.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-red/10 border border-tl-red/30 text-tl-red text-sm font-semibold transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Verifikasi
+        </a>
+        <a href="./settings.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Settings
+        </a>
+        <div class="w-px h-6 bg-tl-border mx-2"></div>
+        <button onclick="logout()" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </div>
+      <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-tl-surface border border-tl-border">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-tl-border bg-tl-surface/95 backdrop-blur-xl">
+    <div class="px-4 py-3 space-y-2">
+      <a href="./dashboard_admin.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        Dashboard
+      </a>
+      <a href="./reports.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Laporan
+      </a>
+      <a href="./users.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Users
+      </a>
+      <a href="./verifications.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-tl-red/10 text-tl-red text-sm font-semibold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Verifikasi
+      </a>
+      <a href="./settings.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Settings
+      </a>
+      <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Logout
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold">Riwayat Verifikasi</h1>
+    <p class="text-tl-text-dim mt-1">Klik pada laporan untuk melihat detail verifikator</p>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" id="stats-container">
+    <div class="stat-card purple bg-tl-surface border border-tl-border rounded-xl p-5">
+      <p class="text-xs text-tl-muted mb-1">Total Verifikasi</p>
+      <p id="stat-total" class="text-3xl font-bold font-mono text-tl-text">0</p>
+    </div>
+    <div class="stat-card blue bg-tl-surface border border-tl-border rounded-xl p-5">
+      <p class="text-xs text-tl-muted mb-1">Verifikator Aktif</p>
+      <p id="stat-verifiers" class="text-3xl font-bold font-mono text-tl-text">0</p>
+    </div>
+    <div class="stat-card green bg-tl-surface border border-tl-border rounded-xl p-5">
+      <p class="text-xs text-tl-muted mb-1">Laporan Terverifikasi</p>
+      <p id="stat-verified" class="text-3xl font-bold font-mono text-tl-text">0</p>
+    </div>
+    <div class="stat-card orange bg-tl-surface border border-tl-border rounded-xl p-5">
+      <p class="text-xs text-tl-muted mb-1">Rata-rata per Laporan</p>
+      <p id="stat-avg" class="text-3xl font-bold font-mono text-tl-text">0</p>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="text-center py-24">
+    <div class="w-10 h-10 border-2 border-tl-red/30 border-t-tl-red rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-tl-muted font-mono text-sm">Memuat data verifikasi...</p>
+  </div>
+
+  <!-- Tabel Verifikasi (Grouped by Threat) -->
+  <div id="content" class="hidden">
+    <div class="bg-tl-surface border border-tl-border rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-tl-surface-2/50">
+            <tr>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">ID</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Laporan</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Jumlah Verifikasi</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Status</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Terakhir Diverifikasi</th>
+            </tr>
+          </thead>
+          <tbody id="verifications-table">
+            <tr><td colspan="5" class="text-center py-8 text-tl-muted">Memuat数据...</td</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center gap-2 mt-6" id="pagination"></div>
+  </div>
+</div>
+
+<!-- Modal Detail Verifikator -->
+<div id="verifier-modal" class="modal">
+  <div class="modal-content">
+    <div class="flex justify-between items-center mb-4">
+      <h3 id="modal-threat-title" class="text-xl font-bold">Detail Laporan</h3>
+      <button onclick="closeModal()" class="text-tl-muted hover:text-tl-text text-2xl">&times;</button>
+    </div>
+    <div class="mb-4 p-3 bg-tl-surface/50 rounded-xl">
+      <p class="text-xs text-tl-muted mb-1">Laporan ID</p>
+      <p id="modal-threat-id" class="text-sm font-mono text-tl-cyan"></p>
+    </div>
+    <div class="mb-4 p-3 bg-tl-surface/50 rounded-xl">
+      <p class="text-xs text-tl-muted mb-1">Judul / Indikator</p>
+      <p id="modal-threat-indicator" class="text-sm text-tl-text break-all"></p>
+    </div>
+    <div class="mb-4">
+      <p class="text-xs font-semibold text-tl-yellow mb-3">📋 Daftar Verifikator (5/5)</p>
+      <div id="modal-verifiers-list" class="space-y-2 max-h-64 overflow-y-auto">
+        <!-- Akan diisi JS -->
+      </div>
+    </div>
+    <button onclick="closeModal()" class="w-full py-2 bg-tl-red/20 border border-tl-red/30 text-tl-red rounded-xl text-sm font-semibold hover:bg-tl-red/30 transition-all">
+      Tutup
+    </button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AUTH CHECK
+// ============================================================
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+if (!token || !user || user.role !== 'admin') {
+  window.location.href = '../../login.html';
+}
+
+// ============================================================
+// GLOBAL VARIABLES
+// ============================================================
+let allReports = [];
+let currentPage = 1;
+const itemsPerPage = 15;
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+function logout() {
+  localStorage.clear();
+  window.location.href = '../../pages/login.html';
+}
+
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+  // ============================================================
+// LOAD REPORTS WITH VERIFICATION DATA
+// ============================================================
+async function loadVerifications() {
+  try {
+    console.log('=== LOADING VERIFICATIONS ===');
+    
+    // Ambil semua laporan
+    const reportsRes = await fetch('/api/admin/reports', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    
+    if (!reportsRes.ok) throw new Error('Gagal memuat data');
+    
+    const reports = await reportsRes.json();
+    console.log('Total reports:', reports.length);
+    
+    // Ambil semua user untuk mapping
+    const usersRes = await fetch('/api/admin/users', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    
+    const users = await usersRes.json();
+    const userMap = new Map(users.map(u => [u.id, u]));
+    console.log('Total users:', users.length);
+    
+    // Proses setiap laporan
+    const processedReports = [];
+    let totalVerifications = 0;
+    let uniqueVerifiers = new Set();
+    let verifiedReportsCount = 0;
+    
+    for (const report of reports) {
+      let verifiers = [];
+      let verificationCount = 0;
+      let lastVerifiedAt = report.created_at;
+      
+      console.log(`Processing report #${report.id}:`, {
+        verification_count: report.verification_count,
+        verification_list: report.verification_list,
+        verified: report.verified
+      });
+      
+      // Ambil verifikator dari verification_list
+      if (report.verification_list && report.verification_list !== 'null' && report.verification_list !== '[]') {
+        try {
+          let verifierIds = [];
+          
+          if (typeof report.verification_list === 'string') {
+            verifierIds = JSON.parse(report.verification_list);
+          } else {
+            verifierIds = report.verification_list;
+          }
+          
+          if (Array.isArray(verifierIds) && verifierIds.length > 0) {
+            verificationCount = verifierIds.length;
+            totalVerifications += verificationCount;
+            
+            console.log(`  → ${verificationCount} verifikator:`, verifierIds);
+            
+            for (const verifierId of verifierIds) {
+              uniqueVerifiers.add(verifierId);
+              const verifier = userMap.get(verifierId);
+              if (verifier) {
+                verifiers.push({
+                  id: verifier.id,
+                  username: verifier.username,
+                  level: verifier.level || 1,
+                  reputation: verifier.reputation || 0
+                });
+              } else {
+                console.warn(`  → Verifier ID ${verifierId} not found in userMap`);
+              }
+            }
+          } else {
+            console.log(`  → No valid verifiers in list`);
+          }
+        } catch (e) {
+          console.error(`Parse error for report ${report.id}:`, e);
+        }
+      } else {
+        console.log(`  → No verification_list data`);
+      }
+      
+      if (report.verified === 1) {
+        verifiedReportsCount++;
+      }
+      
+      processedReports.push({
+        id: report.id,
+        title: report.title || report.indicator || `Laporan #${report.id}`,
+        verification_count: verificationCount,
+        verified: report.verified === 1,
+        verifiers: verifiers,
+        last_verified_at: lastVerifiedAt,
+        created_at: report.created_at
+      });
+    }
+    
+    // Hitung rata-rata
+    const avgVerifications = processedReports.length > 0 ? (totalVerifications / processedReports.length).toFixed(1) : 0;
+    
+    console.log('=== STATS ===');
+    console.log('Total verifications:', totalVerifications);
+    console.log('Unique verifiers:', uniqueVerifiers.size);
+    console.log('Verified reports:', verifiedReportsCount);
+    console.log('Average per report:', avgVerifications);
+    console.log('Processed reports:', processedReports.length);
+    
+    // Urutkan berdasarkan verifikasi terbanyak
+    processedReports.sort((a, b) => b.verification_count - a.verification_count);
+    
+    allReports = processedReports;
+    
+    // Update stats UI
+    document.getElementById('stat-total').textContent = totalVerifications;
+    document.getElementById('stat-verifiers').textContent = uniqueVerifiers.size;
+    document.getElementById('stat-verified').textContent = verifiedReportsCount;
+    document.getElementById('stat-avg').textContent = avgVerifications;
+    
+    renderVerifications();
+    renderPagination();
+    
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+    
+  } catch (err) {
+    console.error('Load verifications error:', err);
+    document.getElementById('verifications-table').innerHTML = '<tr><td colspan="5" class="text-center py-8 text-tl-red">Gagal memuat数据</td</tr>';
+  }
+}
+
+function renderVerifications() {
+  const start = (currentPage - 1) * itemsPerPage;
+  const paginated = allReports.slice(start, start + itemsPerPage);
+  
+  const tbody = document.getElementById('verifications-table');
+  
+  if (paginated.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8 text-tl-muted">Belum ada laporan yang diverifikasi</td</tr>';
+    return;
+  }
+  
+  tbody.innerHTML = paginated.map(report => {
+    const statusColor = report.verified ? 'text-tl-green' : 'text-tl-muted';
+    const statusText = report.verified ? '✅ Terverifikasi' : '⏳ Pending';
+    const isComplete = report.verification_count >= 5;
+    const badgeClass = isComplete ? 'bg-tl-green/20 text-tl-green' : 'bg-tl-yellow/20 text-tl-yellow';
+    const badgeText = isComplete ? 'Complete' : `${report.verification_count}/5`;
+    
+    return `
+      <tr class="border-b border-tl-border/50 hover:bg-tl-red/5 transition-colors cursor-pointer" onclick="showVerifierDetail(${report.id})">
+        <td class="px-5 py-3 text-sm font-mono">#${report.id}</td>
+        <td class="px-5 py-3">
+          <div>
+            <p class="text-sm font-medium">${escapeHtml(report.title.substring(0, 60))}${report.title.length > 60 ? '...' : ''}</p>
+            <p class="text-[10px] text-tl-muted mt-0.5">Klik untuk melihat ${report.verification_count} verifikator</p>
+          </div>
+        </td>
+        <td class="px-5 py-3">
+          <span class="text-sm font-mono ${isComplete ? 'text-tl-green' : 'text-tl-yellow'}">${report.verification_count}</span>
+          <span class="ml-2 px-1.5 py-0.5 rounded text-[9px] font-mono ${badgeClass}">${badgeText}</span>
+        </td>
+        <td class="px-5 py-3"><span class="text-xs ${statusColor}">${statusText}</span></td>
+        <td class="px-5 py-3 text-xs text-tl-muted">${formatDate(report.last_verified_at || report.created_at)}</td>
+      </table>
+    `;
+  }).join('');
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(allReports.length / itemsPerPage);
+  const pagination = document.getElementById('pagination');
+  
+  if (totalPages <= 1) {
+    pagination.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+    html += `<button onclick="goToPage(${i})" class="px-3 py-1 rounded-lg text-sm ${currentPage === i ? 'bg-tl-red text-white' : 'bg-tl-surface border border-tl-border text-tl-text-dim hover:border-tl-red/30'} transition">${i}</button>`;
+  }
+  pagination.innerHTML = html;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderVerifications();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+// SHOW VERIFIER DETAIL MODAL
+// ============================================================
+function showVerifierDetail(reportId) {
+  const report = allReports.find(r => r.id === reportId);
+  if (!report) {
+    console.error('Report not found:', reportId);
+    return;
+  }
+  
+  console.log('Showing detail for report:', report);
+  
+  document.getElementById('modal-threat-id').textContent = `#${report.id}`;
+  document.getElementById('modal-threat-title').innerHTML = `📋 ${escapeHtml(report.title)}`;
+  document.getElementById('modal-threat-indicator').textContent = escapeHtml(report.title);
+  
+  const verifiersList = document.getElementById('modal-verifiers-list');
+  
+  if (!report.verifiers || report.verifiers.length === 0) {
+    verifiersList.innerHTML = '<div class="text-center py-4 text-tl-muted">Belum ada verifikator</div>';
+  } else {
+    verifiersList.innerHTML = report.verifiers.map((v, idx) => {
+      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '📌';
+      return `
+        <div class="verifier-item flex items-center justify-between p-3 rounded-lg bg-tl-surface/50 border border-tl-border">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-tl-red to-tl-orange flex items-center justify-center text-white text-xs font-bold">
+              ${v.username.substring(0,2).toUpperCase()}
+            </div>
+            <div>
+              <p class="text-sm font-semibold">${escapeHtml(v.username)}</p>
+              <p class="text-xs text-tl-muted">Level ${v.level} • ${(v.reputation || 0).toLocaleString()} pts</p>
+            </div>
+          </div>
+          <span class="text-xl">${medal}</span>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  document.getElementById('verifier-modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('verifier-modal').classList.remove('open');
+}
+
+// Tutup modal saat klik di luar
+document.getElementById('verifier-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+loadVerifications();
+</script>
+</body>
+</html>

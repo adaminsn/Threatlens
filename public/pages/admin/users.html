@@ -1,0 +1,613 @@
+ <!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kelola User — ThreatLens Admin</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg': '#080b10',
+            'tl-surface': '#111820',
+            'tl-surface-2': '#0d1218',
+            'tl-border': '#1a2332',
+            'tl-border-light': '#253042',
+            'tl-red': '#ff2d2d',
+            'tl-red-dim': '#ff2d2d33',
+            'tl-cyan': '#00e5ff',
+            'tl-cyan-dim': '#00e5ff33',
+            'tl-orange': '#ff7c2d',
+            'tl-orange-dim': '#ff7c2d33',
+            'tl-green': '#00ff9c',
+            'tl-green-dim': '#00ff9c33',
+            'tl-yellow': '#ffc107',
+            'tl-muted': '#5a6070',
+            'tl-text': '#e8eaf0',
+            'tl-text-dim': '#8a90a0',
+          },
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'mono': ['Share Tech Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #080b10; }
+    ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #253042; }
+
+    .scanline-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; z-index: 9999;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    }
+
+    .nav-glow:hover { text-shadow: 0 0 10px rgba(255,45,45,0.5); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-2px); border-color: rgba(255,45,45,0.4); }
+    
+    .spinner {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 14px; height: 14px;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .modal {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.open { display: flex; }
+    .modal-content {
+      background: rgba(17,24,32,0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,45,45,0.3);
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      padding: 24px;
+    }
+    .input-field {
+      background: #0d1218;
+      border: 1px solid #1a2332;
+      transition: all 0.2s ease;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: rgba(255,45,45,0.5);
+      box-shadow: 0 0 15px rgba(255,45,45,0.1);
+    }
+  </style>
+</head>
+
+<body class="bg-tl-bg text-tl-text font-syne min-h-screen overflow-x-hidden">
+
+<div class="scanline-overlay"></div>
+
+<!-- NAVBAR -->
+<header class="sticky top-0 z-50 bg-tl-bg/90 backdrop-blur-xl border-b border-tl-border">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tl-red/10 border border-tl-red/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-tl-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-tl-red tracking-wider">THREATLENS</h1>
+          <p class="text-[9px] text-tl-muted font-mono tracking-[0.2em] -mt-0.5">ADMIN PANEL</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <a href="./dashboard_admin.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Dashboard
+        </a>
+        <a href="./reports.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Laporan
+        </a>
+        <a href="./users.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-red/10 border border-tl-red/30 text-tl-red text-sm font-semibold transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          Users
+        </a>
+        <div class="w-px h-6 bg-tl-border mx-2"></div>
+        <button onclick="logout()" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </div>
+      <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-tl-surface border border-tl-border">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="mobile-menu" class="hidden md:hidden border-t border-tl-border bg-tl-surface/95 backdrop-blur-xl">
+    <div class="px-4 py-3 space-y-2">
+      <a href="./dashboard_admin.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        Dashboard
+      </a>
+      <a href="./reports.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        Laporan
+      </a>
+      <a href="./users.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-tl-red/10 text-tl-red text-sm font-semibold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Users
+      </a>
+      <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Logout
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN CONTENT -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold">Kelola User</h1>
+    <p class="text-tl-text-dim mt-1">Lihat, edit role, reputasi, atau hapus user</p>
+  </div>
+
+  <!-- Filter & Search -->
+  <div class="bg-tl-surface border border-tl-border rounded-xl p-4 mb-6">
+    <div class="flex flex-col sm:flex-row gap-4">
+      <div class="flex-1">
+        <input type="text" id="search-input" placeholder="Cari user (username/email)..." class="w-full px-4 py-2 bg-tl-bg border border-tl-border rounded-lg text-sm text-tl-text placeholder-tl-muted focus:outline-none focus:border-tl-red/50">
+      </div>
+      <div class="flex gap-2">
+        <select id="filter-role" class="px-4 py-2 bg-tl-bg border border-tl-border rounded-lg text-sm text-tl-text">
+          <option value="all">Semua Role</option>
+          <option value="admin">Admin</option>
+          <option value="user">User</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="text-center py-24">
+    <div class="w-10 h-10 border-2 border-tl-red/30 border-t-tl-red rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-tl-muted font-mono text-sm">Memuat data user...</p>
+  </div>
+
+  <!-- Tabel User -->
+  <div id="content" class="hidden">
+    <div class="bg-tl-surface border border-tl-border rounded-xl overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-tl-surface-2/50">
+            <tr>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">ID</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">User</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Email</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Role</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Level</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Reputasi</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Laporan</th>
+              <th class="text-left px-5 py-3 text-xs font-mono text-tl-muted">Bergabung</th>
+              <th class="text-center px-5 py-3 text-xs font-mono text-tl-muted">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="users-table">
+            <tr><td colspan="9" class="text-center py-8 text-tl-muted">Memuat data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center gap-2 mt-6" id="pagination"></div>
+  </div>
+</div>
+
+<!-- Modal Edit User -->
+<div id="edit-modal" class="modal">
+  <div class="modal-content">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold">Edit User</h3>
+      <button onclick="closeEditModal()" class="text-tl-muted hover:text-tl-text text-2xl">&times;</button>
+    </div>
+    <div class="space-y-4">
+      <input type="hidden" id="edit-user-id">
+      <div>
+        <label class="block text-xs font-mono text-tl-muted mb-1">Username</label>
+        <input type="text" id="edit-username" class="input-field w-full px-4 py-2 rounded-lg text-sm text-tl-text">
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-tl-muted mb-1">Email</label>
+        <input type="email" id="edit-email" class="input-field w-full px-4 py-2 rounded-lg text-sm text-tl-text">
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-tl-muted mb-1">Role</label>
+        <select id="edit-role" class="input-field w-full px-4 py-2 rounded-lg text-sm text-tl-text">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-tl-muted mb-1">Reputasi</label>
+        <input type="number" id="edit-reputation" class="input-field w-full px-4 py-2 rounded-lg text-sm text-tl-text">
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeEditModal()" class="flex-1 py-2 border border-tl-border text-tl-text-dim rounded-lg hover:bg-tl-surface-2 transition">Batal</button>
+      <button onclick="saveUser()" class="flex-1 py-2 bg-tl-cyan hover:bg-cyan-400 text-tl-bg rounded-lg transition flex items-center justify-center gap-2">
+        <div class="spinner" id="edit-spinner"></div>
+        <span>Simpan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Hapus User -->
+<div id="delete-modal" class="modal">
+  <div class="modal-content">
+    <div class="text-center">
+      <div class="text-5xl mb-3">🗑</div>
+      <h3 class="text-xl font-bold mb-2">Hapus User?</h3>
+      <p class="text-tl-muted text-sm mb-2">Tindakan ini akan menghapus:</p>
+      <ul class="text-xs text-tl-muted mb-4 space-y-1">
+        <li>• Semua laporan user</li>
+        <li>• Semua vote user</li>
+        <li>• Semua komentar user</li>
+        <li>• Data user itu sendiri</li>
+      </ul>
+      <p id="delete-username" class="text-tl-red text-sm mb-5 font-mono"></p>
+      <div class="flex gap-3">
+        <button onclick="closeDeleteModal()" class="flex-1 py-2 border border-tl-border text-tl-text-dim rounded-lg hover:bg-tl-surface-2 transition">Batal</button>
+        <button onclick="confirmDelete()" class="flex-1 py-2 bg-tl-red hover:bg-red-600 text-white rounded-lg transition flex items-center justify-center gap-2">
+          <div class="spinner" id="delete-spinner"></div>
+          <span>Ya, Hapus</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// AUTH CHECK
+// ============================================================
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+if (!token || !user || user.role !== 'admin') {
+  window.location.href = '../../login.html';
+}
+
+// ============================================================
+// GLOBAL VARIABLES
+// ============================================================
+let allUsers = [];
+let currentPage = 1;
+const itemsPerPage = 15;
+let currentDeleteId = null;
+let currentEditId = null;
+
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+function showNotif(msg, type = 'error') {
+  const notifDiv = document.createElement('div');
+  notifDiv.className = `fixed bottom-5 right-5 z-50 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-500/20 text-tl-red border border-red-500/30' : 'bg-green-500/20 text-tl-green border border-green-500/30'} backdrop-blur-sm`;
+  notifDiv.innerHTML = type === 'error' ? `⚠ ${msg}` : `✓ ${msg}`;
+  document.body.appendChild(notifDiv);
+  setTimeout(() => notifDiv.remove(), 3000);
+}
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '../../pages/login.html';
+}
+
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  return new Date(dateStr).toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric'
+  });
+}
+
+// ============================================================
+// LOAD USERS
+// ============================================================
+async function loadUsers() {
+  try {
+    const response = await fetch('/api/admin/users', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    
+    if (response.status === 401 || response.status === 403) {
+      logout();
+      return;
+    }
+    
+    if (!response.ok) throw new Error('Gagal memuat user');
+    
+    allUsers = await response.json();
+    
+    // 🔥 URUTKAN BERDASARKAN TANGGAL DAFTAR (TERLAMA KE TERBARU)
+    allUsers.sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      return dateA - dateB;
+    });
+    
+    renderUsers();
+    renderPagination();
+    
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+    
+  } catch (err) {
+    console.error('Load users error:', err);
+    document.getElementById('users-table').innerHTML = '<tr><td colspan="9" class="text-center py-8 text-tl-red">Gagal memuat数据</td</tr>';
+  }
+}
+
+function renderUsers() {
+  const filterRole = document.getElementById('filter-role').value;
+  const searchQuery = document.getElementById('search-input').value.toLowerCase();
+  
+  let filtered = [...allUsers];
+  
+  if (filterRole !== 'all') {
+    filtered = filtered.filter(u => u.role === filterRole);
+  }
+  
+  if (searchQuery) {
+    filtered = filtered.filter(u => 
+      (u.username || '').toLowerCase().includes(searchQuery) ||
+      (u.email || '').toLowerCase().includes(searchQuery)
+    );
+  }
+  
+  const start = (currentPage - 1) * itemsPerPage;
+  const paginated = filtered.slice(start, start + itemsPerPage);
+  
+  const tbody = document.getElementById('users-table');
+  
+  if (paginated.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-tl-muted">Tidak ada user</td</tr>';
+    return;
+  }
+  
+  tbody.innerHTML = paginated.map((u, idx) => {
+    // 🔥 NOMOR URUT (bukan ID asli)
+    const rowNumber = (currentPage - 1) * itemsPerPage + idx + 1;
+    const roleClass = u.role === 'admin' ? 'text-tl-red' : 'text-tl-cyan';
+    const isCurrentUser = u.id === user.id;
+    
+    return `
+      <tr class="border-b border-tl-border/50 hover:bg-tl-red/5 transition-colors">
+        <td class="px-5 py-3 text-sm font-mono">#${rowNumber}</td>
+        <td class="px-5 py-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-tl-red to-tl-orange flex items-center justify-center text-white text-xs font-bold">
+              ${u.avatar ? `<img src="${u.avatar}" class="w-full h-full rounded-full object-cover">` : (u.username ? u.username.substring(0,2).toUpperCase() : '??')}
+            </div>
+            <span class="text-sm font-medium">${escapeHtml(u.username)}</span>
+          </div>
+         </td>
+        <td class="px-5 py-3 text-sm">${escapeHtml(u.email)}</td>
+        <td class="px-5 py-3"><span class="text-xs font-mono ${roleClass}">${u.role}</span></td>
+        <td class="px-5 py-3 text-sm">${u.level || 1}</td>
+        <td class="px-5 py-3 text-sm font-mono text-tl-yellow">${u.reputation || 0}</td>
+        <td class="px-5 py-3 text-sm">${u.total_reports || 0}</td>
+        <td class="px-5 py-3 text-xs text-tl-muted">${formatDate(u.created_at)}</td>
+        <td class="px-5 py-3">
+          <div class="flex gap-2 justify-center">
+            <button onclick="openEditModal(${u.id})" class="p-1.5 rounded-lg hover:bg-tl-cyan/20 transition" title="Edit">
+              <svg class="w-5 h-5 text-tl-muted hover:text-tl-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+            </button>
+            ${!isCurrentUser ? `
+              <button onclick="openDeleteModal(${u.id}, '${escapeHtml(u.username)}')" class="p-1.5 rounded-lg hover:bg-tl-red/20 transition" title="Hapus">
+                <svg class="w-5 h-5 text-tl-muted hover:text-tl-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            ` : '<span class="text-tl-muted text-xs">(Anda)</span>'}
+          </div>
+         </td>
+       </tr>
+    `;
+  }).join('');
+}
+
+function renderPagination() {
+  const filterRole = document.getElementById('filter-role').value;
+  const searchQuery = document.getElementById('search-input').value.toLowerCase();
+  
+  let filtered = [...allUsers];
+  if (filterRole !== 'all') filtered = filtered.filter(u => u.role === filterRole);
+  if (searchQuery) filtered = filtered.filter(u => 
+    (u.username || '').toLowerCase().includes(searchQuery) ||
+    (u.email || '').toLowerCase().includes(searchQuery)
+  );
+  
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const pagination = document.getElementById('pagination');
+  
+  if (totalPages <= 1) {
+    pagination.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+    html += `<button onclick="goToPage(${i})" class="px-3 py-1 rounded-lg text-sm ${currentPage === i ? 'bg-tl-red text-white' : 'bg-tl-surface border border-tl-border text-tl-text-dim hover:border-tl-red/30'} transition">${i}</button>`;
+  }
+  pagination.innerHTML = html;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderUsers();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// EDIT USER
+// ============================================================
+async function openEditModal(id) {
+  const targetUser = allUsers.find(u => u.id === id);
+  if (!targetUser) return;
+  
+  currentEditId = id;
+  document.getElementById('edit-user-id').value = targetUser.id;
+  document.getElementById('edit-username').value = targetUser.username;
+  document.getElementById('edit-email').value = targetUser.email;
+  document.getElementById('edit-role').value = targetUser.role;
+  document.getElementById('edit-reputation').value = targetUser.reputation || 0;
+  
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  currentEditId = null;
+}
+
+async function saveUser() {
+  const id = document.getElementById('edit-user-id').value;
+  const username = document.getElementById('edit-username').value.trim();
+  const email = document.getElementById('edit-email').value.trim();
+  const role = document.getElementById('edit-role').value;
+  const reputation = parseInt(document.getElementById('edit-reputation').value) || 0;
+  
+  if (!username || !email) {
+    showNotif('Username dan email wajib diisi', 'error');
+    return;
+  }
+  
+  const spinner = document.getElementById('edit-spinner');
+  spinner.style.display = 'block';
+  
+  try {
+    const response = await fetch(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ username, email, role, reputation })
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) throw new Error(result.message || 'Gagal update user');
+    
+    showNotif('User berhasil diupdate!', 'success');
+    closeEditModal();
+    await loadUsers();
+    
+  } catch (err) {
+    console.error('Save user error:', err);
+    showNotif(err.message || 'Gagal update user', 'error');
+  }
+  
+  spinner.style.display = 'none';
+}
+
+// ============================================================
+// DELETE USER
+// ============================================================
+function openDeleteModal(id, username) {
+  currentDeleteId = id;
+  document.getElementById('delete-username').textContent = username;
+  document.getElementById('delete-modal').classList.add('open');
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.remove('open');
+  currentDeleteId = null;
+}
+
+async function confirmDelete() {
+  if (!currentDeleteId) return;
+  
+  const spinner = document.getElementById('delete-spinner');
+  spinner.style.display = 'block';
+  
+  try {
+    const response = await fetch(`/api/admin/users/${currentDeleteId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    
+    const result = await response.json();
+    
+    if (!response.ok) throw new Error(result.message || 'Gagal hapus user');
+    
+    showNotif('User berhasil dihapus!', 'success');
+    closeDeleteModal();
+    await loadUsers();
+    
+  } catch (err) {
+    console.error('Delete user error:', err);
+    showNotif(err.message || 'Gagal hapus user', 'error');
+    closeDeleteModal();
+  }
+  
+  spinner.style.display = 'none';
+}
+
+// ============================================================
+// FILTER EVENT LISTENERS
+// ============================================================
+document.getElementById('filter-role').addEventListener('change', () => {
+  currentPage = 1;
+  renderUsers();
+  renderPagination();
+});
+
+document.getElementById('search-input').addEventListener('input', () => {
+  currentPage = 1;
+  renderUsers();
+  renderPagination();
+});
+
+// ============================================================
+// INIT
+// ============================================================
+loadUsers();
+</script>
+</body>
+</html>

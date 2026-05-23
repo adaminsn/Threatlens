@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Masuk — ThreatLens</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg':      '#080b10',
+            'tl-surface': '#111820',
+            'tl-border':  '#1a2332',
+            'tl-red':     '#ff2d2d',
+            'tl-cyan':    '#00e5ff',
+            'tl-muted':   '#5a6070',
+            'tl-text':    '#e8eaf0',
+          },
+          fontFamily: {
+            mono: ['Share Tech Mono', 'monospace'],
+            sans: ['Syne', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Syne', sans-serif; }
+
+    .grid-bg {
+      background-image:
+        linear-gradient(rgba(255,45,45,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,45,45,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+      animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+      0%   { transform: translateY(0); }
+      100% { transform: translateY(50px); }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #ff2d2d;
+      box-shadow: 0 0 0 3px rgba(255,45,45,0.1);
+    }
+
+    .dot-blink {
+      animation: blink 1.5s ease infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    .spinner {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Custom checkbox style */
+    .checkbox-custom {
+      width: 18px;
+      height: 18px;
+      background: #111820;
+      border: 1px solid #1a2332;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .checkbox-custom:checked {
+      background: #ff2d2d;
+      border-color: #ff2d2d;
+      position: relative;
+    }
+    .checkbox-custom:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body class="bg-tl-bg text-tl-text min-h-screen flex overflow-auto">
+  <!-- Background grid animasi -->
+  <div class="grid-bg fixed inset-0 z-0 opacity-50"></div>
+
+  <!-- Efek cahaya merah -->
+  <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full z-0"
+       style="background: radial-gradient(circle, rgba(255,45,45,0.06) 0%, transparent 70%);">
+  </div>
+
+  <!-- Konten utama -->
+  <div class="relative z-10 flex flex-col lg:flex-row w-full min-h-screen">
+
+    <!-- ===== PANEL KIRI — branding ===== -->
+    <div class="flex flex-col w-full lg:w-1/2 p-8 lg:p-12">
+
+      <!-- Logo -->
+      <a href="../../index.html" class="font-mono text-2xl text-tl-red hover:opacity-80 transition-opacity">
+        ⬡ Threat<span class="text-tl-text">Lens</span>
+      </a>
+
+      <!-- Konten tengah panel kiri -->
+      <div class="fade-up flex flex-col items-center text-center mt-40">
+        <div class="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-tl-red font-mono text-xs px-3 py-1.5 rounded-sm mb-8 tracking-widest w-fit">
+          <span class="w-1.5 h-1.5 bg-tl-red rounded-full dot-blink"></span>
+          LIVE — 247 ANCAMAN TERDETEKSI HARI INI
+        </div>
+
+        <h1 class="text-4xl font-extrabold leading-tight mb-4">
+          Selamat Datang<br/>Kembali, <span class="text-tl-red">Hunter</span>
+        </h1>
+
+        <p class="text-tl-muted text-base leading-relaxed mb-10 max-w-sm">
+          Komunitas menunggumu. Masuk dan lanjutkan berkontribusi melindungi ekosistem digital bersama.
+        </p>
+
+        <!-- Statistik mini -->
+        <div class="grid grid-cols-3 gap-4 max-w-sm">
+          <div class="bg-tl-surface border border-tl-border rounded-lg p-4 text-center">
+            <div class="font-mono text-tl-red text-xl font-bold">12.8K</div>
+            <div class="text-tl-muted text-xs mt-1 uppercase tracking-wider">Ancaman</div>
+          </div>
+          <div class="bg-tl-surface border border-tl-border rounded-lg p-4 text-center">
+            <div class="font-mono text-tl-red text-xl font-bold">3.2K</div>
+            <div class="text-tl-muted text-xs mt-1 uppercase tracking-wider">Anggota</div>
+          </div>
+          <div class="bg-tl-surface border border-tl-border rounded-lg p-4 text-center">
+            <div class="font-mono text-tl-red text-xl font-bold">98%</div>
+            <div class="text-tl-muted text-xs mt-1 uppercase tracking-wider">Akurasi</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PANEL KANAN — form login ===== -->
+    <div class="flex flex-col justify-center items-center w-full lg:w-1/2 px-6 sm:px-12 lg:px-16 py-6 lg:py-0">
+      <div class="max-w-sm w-full fade-up">
+
+        <!-- Header form -->
+        <div class="mb-8">
+          <div class="font-mono text-xs text-tl-red tracking-widest uppercase mb-3">
+            // masuk akun
+          </div>
+          <h2 class="text-2xl font-extrabold mb-2">Login ke ThreatLens</h2>
+          <p class="text-tl-muted text-sm">
+            Belum punya akun?
+            <a href="register.html" class="text-tl-red hover:underline font-semibold">Daftar gratis</a>
+          </p>
+        </div>
+
+        <!-- Notifikasi error -->
+        <div id="error-box" class="hidden mb-5 bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
+          <p id="error-msg" class="text-tl-red text-sm font-mono"></p>
+        </div>
+
+        <!-- Notifikasi sukses -->
+        <div id="success-box" class="hidden mb-5 bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3">
+          <p id="success-msg" class="text-green-400 text-sm font-mono"></p>
+        </div>
+
+        <!-- Form login -->
+        <div class="space-y-5">
+
+          <!-- Email -->
+          <div>
+            <label class="block text-sm font-semibold mb-2 text-tl-text">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="kamu@email.com"
+              class="input-field w-full bg-tl-surface border border-tl-border rounded-lg px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all duration-200"
+            />
+          </div>
+
+          <!-- Password -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-sm font-semibold text-tl-text">Password</label>
+            </div>
+            <div class="relative">
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                class="input-field w-full bg-tl-surface border border-tl-border rounded-lg px-4 py-3 text-sm text-tl-text placeholder-tl-muted transition-all duration-200 pr-12"
+              />
+              <button
+                onclick="togglePassword()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-tl-muted hover:text-tl-text transition-colors text-lg"
+                id="toggle-icon"
+              >👁</button>
+            </div>
+          </div>
+
+          <!-- Remember Me Checkbox -->
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="remember-me" class="checkbox-custom appearance-none">
+              <span class="text-sm text-tl-muted hover:text-tl-text transition-colors">Ingatkan saya</span>
+            </label>
+            <a href="#" class="text-xs text-tl-muted hover:text-tl-red transition-colors">Lupa password?</a>
+          </div>
+
+          <!-- Tombol login -->
+          <button
+            onclick="handleLogin()"
+            id="login-btn"
+            class="w-full bg-tl-red hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3 text-sm tracking-wide"
+            onmouseover="this.style.boxShadow='0 0 25px rgba(255,45,45,0.4)'"
+            onmouseout="this.style.boxShadow='none'"
+          >
+            <div class="spinner" id="spinner"></div>
+            <span id="btn-text">Masuk Sekarang →</span>
+          </button>
+
+        </div>
+
+        <!-- Divider -->
+        <div class="flex items-center gap-4 my-6">
+          <div class="flex-1 h-px bg-tl-border"></div>
+          <span class="text-tl-muted text-xs font-mono">atau</span>
+          <div class="flex-1 h-px bg-tl-border"></div>
+        </div>
+
+        <!-- Link register -->
+        <a href="register.html"
+           class="w-full border border-tl-border hover:border-tl-red/50 text-tl-text font-semibold py-3 px-6 rounded-lg transition-all duration-200 text-sm text-center block hover:bg-tl-red/5">
+          Buat Akun Baru
+        </a>
+
+        <!-- Footer kecil -->
+        <p class="text-center text-tl-muted text-xs mt-8 font-mono">
+          © 2024 ThreatLens — See Through Every Threat
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Fungsi toggle password
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon  = document.getElementById('toggle-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        icon.textContent = '👁';
+      }
+    }
+
+    // Load saved credentials jika remember me aktif
+    function loadSavedCredentials() {
+      const savedEmail = localStorage.getItem('saved_email');
+      const savedPassword = localStorage.getItem('saved_password');
+      const rememberMe = localStorage.getItem('remember_me') === 'true';
+      
+      if (rememberMe && savedEmail) {
+        document.getElementById('email').value = savedEmail;
+        if (savedPassword) {
+          document.getElementById('password').value = savedPassword;
+        }
+        document.getElementById('remember-me').checked = true;
+      }
+    }
+
+    function showError(msg) {
+      document.getElementById('success-box').classList.add('hidden');
+      document.getElementById('error-msg').textContent = '⚠ ' + msg;
+      document.getElementById('error-box').classList.remove('hidden');
+    }
+
+    function showSuccess(msg) {
+      document.getElementById('error-box').classList.add('hidden');
+      document.getElementById('success-msg').textContent = '✓ ' + msg;
+      document.getElementById('success-box').classList.remove('hidden');
+    }
+
+    function setLoading(loading) {
+      const btn     = document.getElementById('login-btn');
+      const spinner = document.getElementById('spinner');
+      const text    = document.getElementById('btn-text');
+      if (loading) {
+        btn.disabled = true;
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+        spinner.style.display = 'block';
+        text.textContent = 'Memproses...';
+      } else {
+        btn.disabled = false;
+        btn.classList.remove('opacity-70', 'cursor-not-allowed');
+        spinner.style.display = 'none';
+        text.textContent = 'Masuk Sekarang →';
+      }
+    }
+
+    async function handleLogin() {
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const rememberMe = document.getElementById('remember-me').checked;
+
+      if (!email || !password) {
+        showError('Email dan password wajib diisi.');
+        return;
+      }
+
+      if (!email.includes('@')) {
+        showError('Format email tidak valid.');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          showError(data.message || 'Login gagal. Coba lagi.');
+          setLoading(false);
+          return;
+        }
+
+        // 🔥 Simpan data user dengan LENGKAP termasuk LEVEL
+        const userData = {
+          id: data.user.id,
+          username: data.user.username,
+          email: data.user.email,
+          role: data.user.role,
+          reputation: data.user.reputation,
+          level: data.user.level || 1,
+          avatar: data.user.avatar || '',
+          bio: data.user.bio || '',
+          created_at: data.user.created_at
+        };
+
+        // Debug log untuk cek level
+        console.log('📌 Login Response:', data.user);
+        console.log('📌 User Level dari Server:', data.user.level);
+        console.log('📌 User Data yang Disimpan:', userData);
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        // Handle Remember Me
+        if (rememberMe) {
+          localStorage.setItem('saved_email', email);
+          localStorage.setItem('saved_password', password);
+          localStorage.setItem('remember_me', 'true');
+        } else {
+          localStorage.removeItem('saved_email');
+          localStorage.removeItem('saved_password');
+          localStorage.removeItem('remember_me');
+        }
+
+        showSuccess('Login berhasil! Mengalihkan...');
+
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            window.location.href = 'admin/dashboard_admin.html';
+          } else {
+            window.location.href = 'user/dashboard_user.html';
+          }
+        }, 1000);
+
+      } catch (err) {
+        console.error('Login error:', err);
+        showError('Tidak dapat terhubung ke server. Pastikan server berjalan.');
+        setLoading(false);
+      }
+    }
+
+    // Cek apakah sudah login
+    function checkAlreadyLoggedIn() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      
+      if (token && user) {
+        // Redirect ke dashboard sesuai role
+        if (user.role === 'admin') {
+          window.location.href = 'admin/dashboard_admin.html';
+        } else {
+          window.location.href = 'user/dashboard_user.html';
+        }
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    // Load saved credentials dan cek login saat halaman dimuat
+    window.addEventListener('load', () => {
+      checkAlreadyLoggedIn();
+      loadSavedCredentials();
+    });
+  </script>
+</body>
+</html>

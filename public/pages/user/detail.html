@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Detail Laporan — ThreatLens</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg':        '#080b10',
+            'tl-surface':   '#111820',
+            'tl-surface-2': '#0d1218',
+            'tl-border':    '#1a2332',
+            'tl-border-light': '#253042',
+            'tl-red':       '#ff2d2d',
+            'tl-red-dim':   '#ff2d2d33',
+            'tl-cyan':      '#00e5ff',
+            'tl-cyan-dim':  '#00e5ff33',
+            'tl-orange':    '#ff7c2d',
+            'tl-orange-dim':'#ff7c2d33',
+            'tl-green':     '#00ff9c',
+            'tl-green-dim': '#00ff9c33',
+            'tl-yellow':    '#ffc107',
+            'tl-muted':     '#5a6070',
+            'tl-text':      '#e8eaf0',
+            'tl-text-dim':  '#8a90a0',
+          },
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'mono': ['Share Tech Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #080b10; }
+    ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #253042; }
+
+    .scanline-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none; z-index: 9999;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+
+    .threat-high { background: rgba(255,45,45,0.12); color: #ff2d2d; border: 1px solid rgba(255,45,45,0.3); }
+    .threat-med  { background: rgba(255,124,45,0.12); color: #ff7c2d; border: 1px solid rgba(255,124,45,0.3); }
+    .threat-low  { background: rgba(0,229,255,0.12); color: #00e5ff; border: 1px solid rgba(0,229,255,0.3); }
+
+    .nav-glow:hover { text-shadow: 0 0 10px rgba(255,45,45,0.5); }
+
+    .input-field { font-family: 'Syne', sans-serif; transition: border-color 0.2s, box-shadow 0.2s; }
+    .input-field:focus {
+      outline: none;
+      border-color: #ff2d2d;
+      box-shadow: 0 0 0 3px rgba(255,45,45,0.1);
+    }
+
+    .spinner {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      width: 14px; height: 14px;
+      animation: spin 0.8s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Edit Modal */
+    #edit-modal {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #edit-modal.open { display: flex; }
+
+    /* New comment highlight */
+    @keyframes pulse-border {
+      0%   { border-color: #ff2d2d; }
+      50%  { border-color: transparent; }
+      100% { border-color: #ff2d2d; }
+    }
+    .new-comment { animation: pulse-border 1s ease 2; }
+  </style>
+</head>
+
+<body class="bg-tl-bg text-tl-text min-h-screen font-syne overflow-x-hidden">
+<div class="scanline-overlay"></div>
+
+<!-- ════════════════════════════ NAVBAR ════════════════════════════ -->
+<header class="sticky top-0 z-50 bg-tl-bg/90 backdrop-blur-xl border-b border-tl-border">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex justify-between items-center h-16">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tl-red/10 border border-tl-red/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-tl-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-tl-red tracking-wider">THREATLENS</h1>
+          <p class="text-[9px] text-tl-muted font-mono tracking-[0.2em] -mt-0.5">SEE THROUGH EVERY THREAT</p>
+        </div>
+      </div>
+
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex items-center gap-2">
+        <a href="../feed.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Kembali ke Feed
+        </a>
+        <a href="./dashboard_user.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-red/10 border border-tl-red/30 text-tl-red text-sm font-semibold hover:bg-tl-red/20 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+          Dashboard
+        </a>
+        <a href="./profile_user.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Profile
+        </a>
+        <div class="w-px h-6 bg-tl-border mx-2"></div>
+        <button onclick="logout()" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          Logout
+        </button>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-lg bg-tl-surface border border-tl-border">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden md:hidden border-t border-tl-border bg-tl-surface/95 backdrop-blur-xl">
+    <div class="px-4 py-3 space-y-2">
+      <a href="../feed.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Kembali ke Feed
+      </a>
+      <a href="./dashboard_user.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-tl-red/10 text-tl-red text-sm font-semibold">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="./profile_user.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:bg-tl-surface-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        Profile
+      </a>
+      <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+        </svg>
+        Logout
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════ MAIN ════════════════════════════ -->
+<div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+
+  <!-- Notifikasi global -->
+  <div id="notif-box" class="hidden mb-6 p-4 rounded-xl flex items-center gap-3 border"></div>
+
+  <!-- Loading -->
+  <div id="loading" class="text-center py-24">
+    <div class="w-10 h-10 border-2 border-tl-red/30 border-t-tl-red rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-tl-muted font-mono text-sm">Memuat data laporan...</p>
+  </div>
+
+  <!-- Error / Not Found -->
+  <div id="error-state" class="hidden text-center py-24">
+    <div class="text-5xl mb-4">⚠</div>
+    <p class="text-tl-red font-mono text-lg font-bold mb-2">Laporan tidak ditemukan</p>
+    <p class="text-tl-muted text-sm mb-6">ID laporan tidak valid atau sudah dihapus.</p>
+    <a href="../feed.html"
+      class="inline-flex items-center gap-2 px-5 py-2.5 bg-tl-red hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-all">
+      ← Kembali ke Feed
+    </a>
+  </div>
+
+  <!-- Konten utama -->
+  <div id="content" class="hidden space-y-6 fade-in-up">
+
+    <!-- ── HEADER LAPORAN ── -->
+    <div class="bg-tl-surface border border-tl-border rounded-xl p-6">
+
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs font-mono text-tl-muted mb-5">
+        <a href="../feed.html" class="hover:text-tl-text transition-colors">Feed</a>
+        <span>/</span>
+        <span class="text-tl-text-dim">Detail Laporan</span>
+      </div>
+
+      <!-- Badges -->
+      <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <span id="level-badge" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold"></span>
+        <span id="category-badge" class="px-2 py-1 rounded-lg text-xs font-mono bg-tl-surface-2 border border-tl-border text-tl-text-dim"></span>
+        <span id="type-badge" class="px-2 py-1 rounded-lg text-xs font-mono bg-tl-surface-2 border border-tl-border text-tl-text-dim"></span>
+        <span id="verified-badge" class="hidden items-center gap-1 px-2 py-1 rounded-lg text-xs font-mono bg-tl-green/10 border border-tl-green/30 text-tl-green">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          Verified
+        </span>
+      </div>
+
+      <!-- Target / Indicator -->
+      <h2 id="target" class="text-xl font-bold font-mono mb-3 break-all"></h2>
+      <p id="description" class="text-tl-text-dim text-sm leading-relaxed mb-5"></p>
+
+      <!-- Meta -->
+      <div class="flex items-center justify-between text-xs text-tl-muted font-mono border-t border-tl-border pt-4 flex-wrap gap-2">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Dilaporkan oleh: <span id="reporter" class="text-tl-text font-semibold ml-1"></span>
+        </span>
+        <span id="created-at" class="font-mono"></span>
+      </div>
+    </div>
+
+    <!-- ── MULTI VERIFICATION SECTION (Baru) ── -->
+    <div id="verification-section" class="bg-tl-surface border border-tl-border rounded-xl p-6">
+      <div class="font-mono text-xs text-tl-green tracking-widest uppercase mb-4">// verifikasi komunitas (5 verifikator)</div>
+      
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg">Status Verifikasi</h3>
+        <span id="verification-count-text" class="text-sm font-mono text-tl-yellow">0/5</span>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="w-full bg-tl-border rounded-full h-3 mb-4">
+        <div id="verification-progress-bar" class="bg-tl-green h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+      </div>
+
+      <!-- Daftar Verifikator -->
+      <div id="verifiers-list" class="flex flex-wrap gap-2 mb-4 min-h-[40px]"></div>
+
+      <p id="verification-status-text" class="text-sm text-tl-muted mb-4 leading-relaxed"></p>
+
+      <!-- Tombol Verifikasi (hanya untuk level 50+ atau admin) -->
+      <div id="verify-button-container" class="hidden">
+        <button id="verify-btn" onclick="verifyThreat()" class="w-full py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2">
+          <!-- Akan diisi JS -->
+        </button>
+      </div>
+
+      <!-- Motivasi untuk user level rendah -->
+      <div id="level-motivation" class="hidden mt-3 p-3 rounded-lg bg-tl-yellow/5 border border-tl-yellow/20">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-tl-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <div>
+            <p class="text-xs font-semibold text-tl-yellow">🎯 Jadi Verifikator!</p>
+            <p class="text-xs text-tl-muted" id="level-motivation-text">Terus berkontribusi untuk naik level!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OWNER ACTIONS ── -->
+    <div id="owner-actions" class="hidden flex gap-3 flex-wrap">
+      <button onclick="openEditModal()"
+        class="flex items-center gap-2 px-4 py-2 bg-tl-cyan/10 border border-tl-cyan/30 text-tl-cyan rounded-lg text-sm font-semibold hover:bg-tl-cyan/20 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        </svg>
+        Edit Laporan
+      </button>
+      <button onclick="deleteReport()"
+        class="flex items-center gap-2 px-4 py-2 bg-red-500/10 border border-red-500/30 text-tl-red rounded-lg text-sm font-semibold hover:bg-red-500/20 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+        Hapus Laporan
+      </button>
+    </div>
+
+    <!-- ── VOTING ── -->
+    <div class="bg-tl-surface border border-tl-border rounded-xl p-6">
+      <div class="font-mono text-xs text-tl-red tracking-widest uppercase mb-4">// voting komunitas</div>
+      <h3 class="font-bold text-lg mb-5">Verifikasi Ancaman Ini</h3>
+
+      <!-- Vote bar -->
+      <div class="mb-6">
+        <div class="flex justify-between text-xs font-mono mb-2">
+          <span class="text-tl-red">🔴 Berbahaya</span>
+          <span class="text-tl-green">🟢 Aman</span>
+        </div>
+        <div class="h-3 bg-tl-border rounded-full overflow-hidden">
+          <div id="vote-bar-danger"
+            class="h-full bg-gradient-to-r from-tl-red to-red-500 rounded-full transition-all duration-700"
+            style="width:0%"></div>
+        </div>
+        <div class="flex justify-between text-xs text-tl-muted font-mono mt-1.5">
+          <span id="danger-pct">0%</span>
+          <span id="total-votes">0 total vote</span>
+          <span id="safe-pct">0%</span>
+        </div>
+      </div>
+
+      <!-- Tombol vote -->
+      <div id="vote-buttons" class="flex gap-3">
+        <button onclick="castVote('dangerous')"
+          class="flex-1 flex items-center justify-center gap-2 py-3 bg-red-500/10 border border-red-500/30 text-tl-red rounded-xl font-semibold text-sm hover:bg-red-500/20 active:scale-95 transition-all">
+          <div class="spinner" id="spinner-danger"></div>
+          🔴 Tandai Berbahaya
+        </button>
+        <button onclick="castVote('safe')"
+          class="flex-1 flex items-center justify-center gap-2 py-3 bg-green-500/10 border border-green-500/30 text-tl-green rounded-xl font-semibold text-sm hover:bg-green-500/20 active:scale-95 transition-all">
+          <div class="spinner" id="spinner-safe"></div>
+          🟢 Tandai Aman
+        </button>
+      </div>
+
+      <!-- Sudah vote -->
+      <div id="voted-state" class="hidden text-center py-3 px-4 bg-tl-surface-2 border border-tl-border rounded-xl">
+        <p id="vote-msg" class="text-sm font-mono text-tl-muted">✓ Kamu sudah memberikan vote untuk laporan ini.</p>
+      </div>
+    </div>
+
+    <!-- ── KOMENTAR ── -->
+    <div class="bg-tl-surface border border-tl-border rounded-xl p-6">
+      <div class="font-mono text-xs text-tl-red tracking-widest uppercase mb-4">// diskusi komunitas</div>
+      <h3 class="font-bold text-lg mb-5">
+        Komentar <span id="comment-count" class="text-tl-muted font-mono text-sm">(0)</span>
+      </h3>
+
+      <!-- Form komentar -->
+      <div class="mb-6 space-y-3">
+        <textarea
+          id="comment-input"
+          rows="3"
+          maxlength="1000"
+          placeholder="Tulis analisis atau komentar kamu tentang ancaman ini..."
+          class="input-field w-full bg-tl-bg border border-tl-border rounded-xl px-4 py-3 text-sm text-tl-text placeholder-tl-muted resize-none"
+        ></textarea>
+        <div class="flex items-center justify-between">
+          <span id="char-count" class="text-xs text-tl-muted font-mono">0 / 1000</span>
+          <button onclick="addComment()" id="comment-btn"
+            class="flex items-center gap-2 px-5 py-2.5 bg-tl-red hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-tl-red/20 hover:shadow-tl-red/40">
+            <div class="spinner" id="spinner-comment"></div>
+            <span id="comment-btn-text">Kirim Komentar</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- List komentar -->
+      <div id="comment-list" class="space-y-3"></div>
+
+      <!-- Empty komentar -->
+      <div id="no-comments" class="hidden text-center py-10">
+        <div class="text-3xl mb-3">💬</div>
+        <p class="text-tl-muted text-sm">Belum ada komentar. Jadilah yang pertama!</p>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div>
+
+<!-- ════════════════════════════ EDIT MODAL ════════════════════════════ -->
+<div id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="bg-tl-surface border border-tl-border rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+    <div class="flex items-center justify-between mb-5">
+      <h3 id="modal-title" class="text-lg font-bold">Edit Laporan</h3>
+      <button onclick="closeEditModal()" class="text-tl-muted hover:text-tl-text transition-colors p-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-mono text-tl-muted mb-1.5 uppercase tracking-widest">Target / Indikator</label>
+        <input type="text" id="edit-target" maxlength="500"
+          class="input-field w-full bg-tl-bg border border-tl-border rounded-xl px-4 py-3 text-sm text-tl-text font-mono"/>
+      </div>
+      <div>
+        <label class="block text-xs font-mono text-tl-muted mb-1.5 uppercase tracking-widest">Deskripsi</label>
+        <textarea id="edit-description" rows="4" maxlength="2000"
+          class="input-field w-full bg-tl-bg border border-tl-border rounded-xl px-4 py-3 text-sm text-tl-text resize-none"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeEditModal()"
+        class="flex-1 py-2.5 border border-tl-border text-tl-text-dim rounded-xl text-sm font-semibold hover:bg-tl-surface-2 transition-all">
+        Batal
+      </button>
+      <button onclick="saveEdit()"
+        class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-tl-cyan hover:bg-cyan-400 text-tl-bg rounded-xl text-sm font-bold transition-all">
+        <div class="spinner" id="spinner-edit" style="border-top-color:#080b10; border-color:rgba(0,0,0,0.2)"></div>
+        <span id="edit-btn-text">Simpan Perubahan</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ CONFIRM DELETE MODAL ════════════════════════════ -->
+<div id="confirm-modal" style="display:none"
+  class="fixed inset-0 z-[1001] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-tl-surface border border-tl-border rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center">
+    <div class="text-4xl mb-3">🗑</div>
+    <h3 class="font-bold text-lg mb-2">Hapus Laporan?</h3>
+    <p class="text-tl-muted text-sm mb-6">Tindakan ini tidak dapat dibatalkan. Laporan akan dihapus permanen.</p>
+    <div class="flex gap-3">
+      <button onclick="closeConfirm()"
+        class="flex-1 py-2.5 border border-tl-border text-tl-text-dim rounded-xl text-sm font-semibold hover:bg-tl-surface-2 transition-all">
+        Batal
+      </button>
+      <button onclick="confirmDelete()"
+        class="flex-1 flex items-center justify-center gap-2 py-2.5 bg-tl-red hover:bg-red-600 text-white rounded-xl text-sm font-bold transition-all">
+        <div class="spinner" id="spinner-delete"></div>
+        <span id="delete-btn-text">Ya, Hapus</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ SCRIPTS ════════════════════════════ -->
+<script>
+  // ── State ──────────────────────────────────────────────────────────────
+  const params   = new URLSearchParams(window.location.search);
+  const threatId = params.get('id');
+  const token    = localStorage.getItem('token');
+  let user       = JSON.parse(localStorage.getItem('user') || 'null');
+
+  let threatData = null;
+
+  // Auth guard
+  if (!token || !user) { window.location.href = '../login.html'; }
+  if (!threatId)       { window.location.href = '../feed.html'; }
+
+  // ============================================================
+  // REFRESH DATA USER DARI SERVER (PASTIKAN LEVEL TERBARU)
+  // ============================================================
+  async function refreshUserData() {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return null;
+      
+      const response = await fetch('/api/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      
+      if (response.ok) {
+        const userData = await response.json();
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        
+        // Update dengan data terbaru dari server
+        storedUser.level = userData.level;
+        storedUser.reputation = userData.reputation;
+        storedUser.username = userData.username;
+        storedUser.email = userData.email;
+        storedUser.role = userData.role;
+        
+        localStorage.setItem('user', JSON.stringify(storedUser));
+        
+        console.log('✅ User data refreshed from server:', {
+          username: storedUser.username,
+          level: storedUser.level,
+          reputation: storedUser.reputation
+        });
+        
+        // Update global user variable
+        user = storedUser;
+        
+        return storedUser;
+      }
+    } catch (err) {
+      console.error('Refresh user data error:', err);
+    }
+    return null;
+  }
+
+  // Mobile menu
+  function toggleMobileMenu() {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+  }
+
+  // ── Utilities ───────────────────────────────────────────────────────────
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str || '');
+    return div.innerHTML;
+  }
+
+  function formatDate(dateStr) {
+    try {
+      return new Date(dateStr).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'long', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch { return dateStr || ''; }
+  }
+
+  function showNotif(msg, type = 'error') {
+    const box = document.getElementById('notif-box');
+    box.className = 'mb-6 p-4 rounded-xl flex items-center gap-3 border';
+    if (type === 'error') {
+      box.classList.add('bg-red-500/10', 'border-red-500/30');
+      box.innerHTML = `<svg class="w-5 h-5 text-tl-red shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg><span class="text-sm font-mono text-tl-red">${escapeHtml(msg)}</span>`;
+    } else {
+      box.classList.add('bg-green-500/10', 'border-green-500/30');
+      box.innerHTML = `<svg class="w-5 h-5 text-tl-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span class="text-sm font-mono text-tl-green">${escapeHtml(msg)}</span>`;
+    }
+    box.classList.remove('hidden');
+    clearTimeout(box._timer);
+    box._timer = setTimeout(() => box.classList.add('hidden'), 4000);
+  }
+
+  function setSpinner(id, visible) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = visible ? 'block' : 'none';
+  }
+
+  // ── Level config ─────────────────────────────────────────────────────────
+  function getLevelConfig(level) {
+    switch (level) {
+      case 'high': return { badgeClass: 'threat-high', text: 'HIGH RISK',   color: 'text-tl-red'    };
+      case 'med':  return { badgeClass: 'threat-med',  text: 'MEDIUM RISK', color: 'text-tl-orange' };
+      default:     return { badgeClass: 'threat-low',  text: 'LOW RISK',    color: 'text-tl-cyan'   };
+    }
+  }
+
+  // ── Load Detail ─────────────────────────────────────────────────────────
+  async function loadThreat() {
+    try {
+      const res = await fetch('/api/threats/' + threatId);
+
+      if (res.status === 404) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('error-state').classList.remove('hidden');
+        return;
+      }
+      if (!res.ok) throw new Error('Server error ' + res.status);
+
+      threatData = await res.json();
+      renderThreat();
+      loadVotes();
+      loadComments();
+      await loadVerificationData();
+
+    } catch (err) {
+      document.getElementById('loading').innerHTML = `
+        <div class="text-center py-24">
+          <div class="text-5xl mb-4">🔌</div>
+          <p class="text-tl-red font-mono text-lg font-bold mb-2">Gagal memuat data</p>
+          <p class="text-tl-muted text-sm mb-6">Periksa koneksi internet kamu.</p>
+          <a href="../feed.html" class="inline-flex items-center gap-2 px-5 py-2.5 bg-tl-surface border border-tl-border text-tl-text-dim rounded-xl text-sm font-bold hover:text-tl-text transition-all">
+            ← Kembali ke Feed
+          </a>
+        </div>`;
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────
+  function renderThreat() {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+
+    const d = threatData;
+    const cfg = getLevelConfig(d.level);
+
+    // Level badge
+    const badge = document.getElementById('level-badge');
+    badge.className = 'px-2.5 py-1 rounded-lg text-xs font-mono font-bold ' + cfg.badgeClass;
+    badge.textContent = cfg.text;
+
+    // Badges lain
+    document.getElementById('category-badge').textContent = escapeHtml(d.category || '');
+    document.getElementById('type-badge').textContent     = escapeHtml(d.type || '');
+
+    // Verified
+    if (d.verified) {
+      document.getElementById('verified-badge').classList.remove('hidden');
+      document.getElementById('verified-badge').classList.add('flex');
+    }
+
+    // Konten
+    const targetEl = document.getElementById('target');
+    targetEl.textContent = d.target || d.indicator || '';
+    targetEl.className   = 'text-xl font-bold font-mono mb-3 break-all ' + cfg.color;
+
+    document.getElementById('description').textContent = d.description || '';
+    document.getElementById('reporter').textContent    = d.user || d.username || 'Unknown';
+    document.getElementById('created-at').textContent  = d.createdAt || formatDate(d.created_at);
+
+    // Owner actions
+    const ownerId = d.userId || d.user_id;
+    if (user && (ownerId === user.id || user.role === 'admin')) {
+      document.getElementById('owner-actions').classList.remove('hidden');
+      document.getElementById('owner-actions').classList.add('flex');
+    }
+  }
+
+  // ── Multi Verification ───────────────────────────────────────────
+  async function loadVerificationData() {
+    // 🔥 Refresh user data dari server TERLEBIH DAHULU
+    await refreshUserData();
+    
+    try {
+      const res = await fetch('/api/threats/' + threatId);
+      const data = await res.json();
+      
+      console.log('Verification Data:', {
+        verification_count: data.verification_count,
+        verification_list: data.verification_list,
+        verified: data.verified
+      });
+      
+      const verificationCount = data.verification_count || 0;
+      let verificationList = [];
+      if (data.verification_list && data.verification_list !== 'null' && data.verification_list !== '[]') {
+        try {
+          verificationList = JSON.parse(data.verification_list);
+        } catch (e) {
+          verificationList = [];
+        }
+      }
+      const isVerified = data.verified;
+      
+      // 🔥 Gunakan user yang sudah di-refresh
+      const userLevel = user.level || 1;
+      const userRole = user.role || 'user';
+      
+      console.log('Current user level after refresh:', userLevel);
+      
+      // Update progress bar
+      const progressPercent = (verificationCount / 5) * 100;
+      const progressBar = document.getElementById('verification-progress-bar');
+      if (progressBar) progressBar.style.width = `${progressPercent}%`;
+      document.getElementById('verification-count-text').textContent = `${verificationCount}/5`;
+      
+      // Update status text
+      const statusText = document.getElementById('verification-status-text');
+      if (isVerified) {
+        statusText.innerHTML = '✅ Laporan ini telah mencapai 5 verifikasi dan RESMI TERVERIFIKASI!';
+        statusText.classList.add('text-tl-green');
+      } else {
+        const needed = 5 - verificationCount;
+        statusText.innerHTML = `🔍 Laporan ini membutuhkan ${needed} verifikasi lagi dari user Level 50+ untuk terverifikasi.`;
+        statusText.classList.remove('text-tl-green');
+      }
+      
+      // Update daftar verifikator
+      const verifiersList = document.getElementById('verifiers-list');
+      if (verificationList.length > 0) {
+        const verifierNames = [];
+        for (const vid of verificationList) {
+          try {
+            const userRes = await fetch(`/api/auth/user/${vid}`);
+            if (userRes.ok) {
+              const userData = await userRes.json();
+              verifierNames.push(userData.username);
+            } else {
+              verifierNames.push(`User ${vid}`);
+            }
+          } catch (err) {
+            verifierNames.push(`User ${vid}`);
+          }
+        }
+        
+        verifiersList.innerHTML = verifierNames.map(name => `
+          <div class="flex items-center gap-1 px-2 py-1 rounded-lg bg-tl-green/10 border border-tl-green/30">
+            <svg class="w-3 h-3 text-tl-green" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-xs">${escapeHtml(name)}</span>
+          </div>
+        `).join('');
+      } else {
+        verifiersList.innerHTML = '<span class="text-xs text-tl-muted">Belum ada verifikator</span>';
+      }
+      
+      // Update tombol verifikasi
+      const canVerify = (userRole === 'admin') || (userLevel >= 50);
+      const alreadyVerified = verificationList.includes(user.id);
+      const isOwner = data.user_id === user.id;
+      
+      const verifyContainer = document.getElementById('verify-button-container');
+      const verifyBtn = document.getElementById('verify-btn');
+      
+      if (canVerify && !alreadyVerified && !isVerified && !isOwner) {
+        verifyContainer.classList.remove('hidden');
+        verifyBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Verifikasi Laporan Ini (${verificationCount}/5)
+        `;
+        verifyBtn.disabled = false;
+        verifyBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+        verifyBtn.classList.add('bg-tl-green/10', 'border', 'border-tl-green/30', 'text-tl-green', 'hover:bg-tl-green/20');
+      } else if (alreadyVerified) {
+        verifyContainer.classList.remove('hidden');
+        verifyBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+          </svg>
+          Anda Sudah Memverifikasi Laporan Ini (${verificationCount}/5)
+        `;
+        verifyBtn.disabled = true;
+        verifyBtn.classList.add('bg-tl-green/20', 'border', 'border-tl-green/50', 'text-tl-green', 'cursor-not-allowed', 'opacity-60');
+      } else {
+        verifyContainer.classList.add('hidden');
+      }
+      
+    } catch (err) {
+      console.error('Load verification data error:', err);
+    }
+  }
+
+  async function verifyThreat() {
+    const verifyBtn = document.getElementById('verify-btn');
+    const originalHTML = verifyBtn.innerHTML;
+    
+    verifyBtn.innerHTML = `<div class="spinner" style="display: block; border-top-color: currentColor;"></div> Memproses...`;
+    verifyBtn.disabled = true;
+    
+    try {
+      const response = await fetch(`/api/threats/${threatId}/verify`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        showNotif(result.message, 'success');
+        // Refresh user data dulu, lalu reload halaman
+        await refreshUserData();
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        showNotif(result.message, 'error');
+        verifyBtn.innerHTML = originalHTML;
+        verifyBtn.disabled = false;
+      }
+    } catch (err) {
+      console.error('Verify error:', err);
+      showNotif('Terjadi kesalahan server', 'error');
+      verifyBtn.innerHTML = originalHTML;
+      verifyBtn.disabled = false;
+    }
+  }
+
+  // ── Voting ─────────────────────────────────────────────────────────────
+  async function loadVotes() {
+    try {
+      const res  = await fetch('/api/votes/' + threatId, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      updateVoteUI(data);
+
+      // Cek apakah user sudah vote
+      if (data.user_vote) {
+        document.getElementById('vote-buttons').classList.add('hidden');
+        document.getElementById('voted-state').classList.remove('hidden');
+        document.getElementById('vote-msg').textContent =
+          '✓ Kamu sudah voting: ' + (data.user_vote === 'dangerous' ? '🔴 Berbahaya' : '🟢 Aman');
+      }
+    } catch (err) {
+      console.warn('Gagal load votes:', err);
+    }
+  }
+
+  function updateVoteUI(data) {
+    const total     = (data.dangerous || 0) + (data.safe || 0);
+    const dangerPct = total > 0 ? Math.round((data.dangerous || 0) / total * 100) : 0;
+    const safePct   = 100 - dangerPct;
+
+    document.getElementById('vote-bar-danger').style.width = dangerPct + '%';
+    document.getElementById('danger-pct').textContent      = dangerPct + '%';
+    document.getElementById('safe-pct').textContent        = safePct + '%';
+    document.getElementById('total-votes').textContent     = total + ' total vote';
+  }
+
+  async function castVote(type) {
+    const spinnerId = 'spinner-' + (type === 'dangerous' ? 'danger' : 'safe');
+    setSpinner(spinnerId, true);
+    try {
+      const res = await fetch('/api/votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ threat_id: threatId, vote: type })
+      });
+      if (res.status === 401) return handleUnauth();
+      const data = await res.json();
+      if (!res.ok) {
+        showNotif(data.message || 'Gagal melakukan voting.');
+      } else {
+        showNotif('Vote berhasil dikirim!', 'success');
+        document.getElementById('vote-buttons').classList.add('hidden');
+        document.getElementById('voted-state').classList.remove('hidden');
+        document.getElementById('vote-msg').textContent =
+          '✓ Kamu sudah voting: ' + (type === 'dangerous' ? '🔴 Berbahaya' : '🟢 Aman');
+        loadVotes();
+      }
+    } catch (err) {
+      showNotif('Tidak dapat terhubung ke server.');
+    }
+    setSpinner(spinnerId, false);
+  }
+
+  // ── Komentar ───────────────────────────────────────────────────────────
+  async function loadComments() {
+    try {
+      const res      = await fetch('/api/comments/' + threatId);
+      const comments = await res.json();
+      renderComments(Array.isArray(comments) ? comments : []);
+    } catch (err) {
+      console.warn('Gagal load komentar:', err);
+    }
+  }
+
+  function renderComments(comments) {
+    const list  = document.getElementById('comment-list');
+    const empty = document.getElementById('no-comments');
+    document.getElementById('comment-count').textContent = '(' + comments.length + ')';
+    list.innerHTML = '';
+
+    if (comments.length === 0) { empty.classList.remove('hidden'); return; }
+    empty.classList.add('hidden');
+
+    comments.forEach(c => {
+      const initial = (c.username || c.user || 'U')[0].toUpperCase();
+      const name    = c.username || c.user || 'Unknown';
+      const div     = document.createElement('div');
+      div.className = 'bg-tl-bg border border-tl-border rounded-xl p-4 transition-all';
+      div.innerHTML = `
+        <div class="flex items-center gap-2 mb-2 flex-wrap">
+          <div class="w-7 h-7 rounded-full bg-tl-red/20 border border-tl-red/30 flex items-center justify-center text-xs font-bold text-tl-red flex-shrink-0">
+            ${escapeHtml(initial)}
+          </div>
+          <span class="text-sm font-semibold">${escapeHtml(name)}</span>
+          <span class="text-xs text-tl-muted font-mono ml-auto">${c.createdAt || formatDate(c.created_at)}</span>
+        </div>
+        <p class="text-sm text-tl-text-dim leading-relaxed">${escapeHtml(c.content || '')}</p>`;
+      list.appendChild(div);
+    });
+  }
+
+  document.getElementById('comment-input').addEventListener('input', function() {
+    document.getElementById('char-count').textContent = this.value.length + ' / 1000';
+  });
+  document.getElementById('comment-input').addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') addComment();
+  });
+
+  async function addComment() {
+    const input   = document.getElementById('comment-input');
+    const content = input.value.trim();
+    if (!content) { showNotif('Komentar tidak boleh kosong.'); input.focus(); return; }
+    if (content.length > 1000) { showNotif('Komentar terlalu panjang (maks. 1000 karakter).'); return; }
+
+    setSpinner('spinner-comment', true);
+    document.getElementById('comment-btn-text').textContent = 'Mengirim...';
+    document.getElementById('comment-btn').disabled = true;
+
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ threat_id: threatId, content })
+      });
+      if (res.status === 401) return handleUnauth();
+      const data = await res.json();
+      if (!res.ok) {
+        showNotif(data.message || 'Gagal mengirim komentar.');
+      } else {
+        input.value = '';
+        document.getElementById('char-count').textContent = '0 / 1000';
+        showNotif('Komentar berhasil dikirim!', 'success');
+        await loadComments();
+        const list = document.getElementById('comment-list');
+        if (list.lastElementChild) {
+          list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          list.lastElementChild.classList.add('new-comment');
+          setTimeout(() => list.lastElementChild?.classList.remove('new-comment'), 3000);
+        }
+      }
+    } catch (err) {
+      showNotif('Tidak dapat terhubung ke server.');
+    }
+
+    setSpinner('spinner-comment', false);
+    document.getElementById('comment-btn-text').textContent = 'Kirim Komentar';
+    document.getElementById('comment-btn').disabled = false;
+  }
+
+  // ── Edit Modal ─────────────────────────────────────────────────────────
+  function openEditModal() {
+    if (!threatData) return;
+    document.getElementById('edit-target').value      = threatData.target || threatData.indicator || '';
+    document.getElementById('edit-description').value = threatData.description || '';
+    document.getElementById('edit-modal').classList.add('open');
+    document.getElementById('edit-target').focus();
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeEditModal(); closeConfirm(); }
+  });
+  document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+
+  async function saveEdit() {
+    const target      = document.getElementById('edit-target').value.trim();
+    const description = document.getElementById('edit-description').value.trim();
+    if (!target || !description) { showNotif('Semua field harus diisi.'); return; }
+
+    setSpinner('spinner-edit', true);
+    document.getElementById('edit-btn-text').textContent = 'Menyimpan...';
+
+    try {
+      const res = await fetch('/api/threats/' + threatId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ target, description })
+      });
+      if (res.status === 401) return handleUnauth();
+      if (res.status === 403) { showNotif('Tidak ada izin untuk mengedit.'); closeEditModal(); return; }
+      const data = await res.json();
+      if (!res.ok) {
+        showNotif(data.message || 'Gagal menyimpan perubahan.');
+      } else {
+        threatData = { ...threatData, target, description };
+        const targetEl = document.getElementById('target');
+        targetEl.textContent = target;
+        document.getElementById('description').textContent = description;
+        showNotif('Laporan berhasil diperbarui!', 'success');
+        closeEditModal();
+      }
+    } catch (err) {
+      showNotif('Tidak dapat terhubung ke server.');
+    }
+
+    setSpinner('spinner-edit', false);
+    document.getElementById('edit-btn-text').textContent = 'Simpan Perubahan';
+  }
+
+  // ── Delete ─────────────────────────────────────────────────────────────
+  function deleteReport() {
+    document.getElementById('confirm-modal').style.display = 'flex';
+  }
+  function closeConfirm() {
+    document.getElementById('confirm-modal').style.display = 'none';
+  }
+
+  async function confirmDelete() {
+    setSpinner('spinner-delete', true);
+    document.getElementById('delete-btn-text').textContent = 'Menghapus...';
+    try {
+      const res = await fetch('/api/threats/' + threatId, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.status === 401) return handleUnauth();
+      if (res.status === 403) { showNotif('Tidak ada izin untuk menghapus.'); closeConfirm(); return; }
+      if (res.ok) {
+        showNotif('Laporan berhasil dihapus. Mengalihkan...', 'success');
+        closeConfirm();
+        localStorage.setItem('notif', 'Laporan berhasil dihapus.');
+        setTimeout(() => { window.location.href = '../feed.html'; }, 1500);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        showNotif(data.message || 'Gagal menghapus laporan.');
+        closeConfirm();
+      }
+    } catch (err) {
+      showNotif('Tidak dapat terhubung ke server.');
+      closeConfirm();
+    }
+    setSpinner('spinner-delete', false);
+    document.getElementById('delete-btn-text').textContent = 'Ya, Hapus';
+  }
+
+  // ── Auth ───────────────────────────────────────────────────────────────
+  function handleUnauth() {
+    localStorage.clear();
+    window.location.href = '../login.html';
+  }
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = '../login.html';
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────
+  async function init() {
+    await refreshUserData();
+    await loadThreat();
+  }
+
+  init();
+</script>
+</body>
+</html>

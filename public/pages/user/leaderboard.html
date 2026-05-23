@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard — ThreatLens</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg': '#080b10',
+            'tl-surface': '#111820',
+            'tl-surface-2': '#0d1218',
+            'tl-border': '#1a2332',
+            'tl-border-light': '#253042',
+            'tl-red': '#ff2d2d',
+            'tl-red-dim': '#ff2d2d33',
+            'tl-cyan': '#00e5ff',
+            'tl-cyan-dim': '#00e5ff33',
+            'tl-orange': '#ff7c2d',
+            'tl-orange-dim': '#ff7c2d33',
+            'tl-green': '#00ff9c',
+            'tl-green-dim': '#00ff9c33',
+            'tl-yellow': '#ffc107',
+            'tl-muted': '#5a6070',
+            'tl-text': '#e8eaf0',
+            'tl-text-dim': '#8a90a0',
+          },
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'mono': ['Share Tech Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #080b10; }
+    ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #253042; }
+    
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,45,45,0.4);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    }
+    .rank-1 { background: linear-gradient(135deg, #ffd700, #ffb347); }
+    .rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); }
+    .rank-3 { background: linear-gradient(135deg, #cd7f32, #b87333); }
+    .scanline-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    }
+    .nav-glow:hover {
+      text-shadow: 0 0 10px rgba(255,45,45,0.5);
+    }
+  </style>
+</head>
+
+<body class="bg-tl-bg text-tl-text font-syne min-h-screen">
+<div class="scanline-overlay"></div>
+
+<!-- NAVBAR -->
+<header class="sticky top-0 z-50 bg-tl-bg/90 backdrop-blur-xl border-b border-tl-border">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="flex justify-between items-center h-16">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-tl-red/10 border border-tl-red/30 flex items-center justify-center">
+          <svg class="w-5 h-5 text-tl-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-tl-red tracking-wider">THREATLENS</h1>
+          <p class="text-[9px] text-tl-muted font-mono tracking-[0.2em] -mt-0.5">SEE THROUGH EVERY THREAT</p>
+        </div>
+      </div>
+      <div class="hidden md:flex items-center gap-2">
+        <a href="./dashboard_user.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          Dashboard
+        </a>
+        <a href="../feed.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-text hover:bg-tl-surface transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+          Feed
+        </a>
+        <a href="./leaderboard.html" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg bg-tl-yellow/10 border border-tl-yellow/30 text-tl-yellow text-sm font-semibold hover:bg-tl-yellow/20 transition-all">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z"/>
+          </svg>
+          Leaderboard
+        </a>
+        <button onclick="logout()" class="nav-glow flex items-center gap-2 px-4 py-2 rounded-lg text-sm text-tl-text-dim hover:text-tl-red hover:bg-tl-red/5 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+  
+  <!-- Header Leaderboard -->
+  <div class="mb-8 text-center">
+    <div class="inline-flex items-center gap-2 bg-tl-yellow/10 border border-tl-yellow/30 rounded-full px-4 py-1 mb-4">
+      <span class="w-2 h-2 rounded-full bg-tl-yellow animate-pulse"></span>
+      <span class="text-xs font-mono text-tl-yellow">TOP 100 HUNTERS</span>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-bold">🏆 Leaderboard</h1>
+    <p class="text-tl-text-dim mt-2">100 Threat Hunters dengan reputasi tertinggi</p>
+  </div>
+
+  <!-- Statistik -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-tl-surface border border-tl-border rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-tl-yellow" id="total-users">0</p>
+      <p class="text-xs text-tl-muted">Total Hunters Aktif</p>
+    </div>
+    <div class="bg-tl-surface border border-tl-border rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-tl-red" id="total-reports">0</p>
+      <p class="text-xs text-tl-muted">Total Laporan</p>
+    </div>
+    <div class="bg-tl-surface border border-tl-border rounded-xl p-4 text-center">
+      <p class="text-2xl font-bold text-tl-green" id="total-votes">0</p>
+      <p class="text-xs text-tl-muted">Total Vote</p>
+    </div>
+  </div>
+
+  <!-- Top 3 Podium -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12" id="podium-container"></div>
+
+  <!-- Tabel Leaderboard -->
+  <div class="bg-tl-surface border border-tl-border rounded-xl overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full">
+        <thead>
+          <tr class="border-b border-tl-border bg-tl-surface-2/50">
+            <th class="text-center px-4 py-3 text-xs font-mono text-tl-muted uppercase tracking-wider w-16">Rank</th>
+            <th class="text-left px-4 py-3 text-xs font-mono text-tl-muted uppercase tracking-wider">Hunter</th>
+            <th class="text-center px-4 py-3 text-xs font-mono text-tl-muted uppercase tracking-wider">Level</th>
+            <th class="text-center px-4 py-3 text-xs font-mono text-tl-muted uppercase tracking-wider">Reputasi</th>
+            <th class="text-center px-4 py-3 text-xs font-mono text-tl-muted uppercase tracking-wider">Laporan</th>
+            <th class="text-center px-4 py-3 text-xs font-mono text-tl-muted uppercase tracking-wider">Vote</th>
+           </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+          <tr><td colspan="6" class="text-center py-8 text-tl-muted">Memuat data...</td></tr>
+        </tbody>
+       </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex justify-center gap-2 mt-6" id="pagination"></div>
+</div>
+
+<script>
+// Auth check
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '../login.html';
+
+let allUsers = [];
+let currentPage = 1;
+const itemsPerPage = 20;
+
+function logout() {
+  localStorage.clear();
+  window.location.href = '../login.html';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+
+function getRankClass(rank) {
+  if (rank === 1) return 'rank-1';
+  if (rank === 2) return 'rank-2';
+  if (rank === 3) return 'rank-3';
+  return 'bg-tl-surface-2';
+}
+
+async function loadLeaderboard() {
+  try {
+    const response = await fetch('/api/auth/top-users?limit=100', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    
+    if (!response.ok) throw new Error('Gagal memuat leaderboard');
+    
+    allUsers = await response.json();
+    
+    const totalReports = allUsers.reduce(function(sum, u) { return sum + (u.total_reports || 0); }, 0);
+    const totalVotes = allUsers.reduce(function(sum, u) { return sum + (u.total_votes_received || 0); }, 0);
+    
+    document.getElementById('total-users').textContent = allUsers.length;
+    document.getElementById('total-reports').textContent = totalReports.toLocaleString();
+    document.getElementById('total-votes').textContent = totalVotes.toLocaleString();
+    
+    renderPodium();
+    renderTable();
+    renderPagination();
+    
+  } catch (err) {
+    console.error(err);
+    document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="6" class="text-center py-8 text-tl-red">Gagal memuat data</td></tr>';
+  }
+}
+
+function renderPodium() {
+  const top3 = allUsers.slice(0, 3);
+  const podium = document.getElementById('podium-container');
+  
+  if (top3.length === 0) {
+    podium.innerHTML = '';
+    return;
+  }
+  
+  const medals = ['🥈', '👑', '🥉'];
+  const titles = ['Runner Up', 'Champion', 'Third Place'];
+  const colors = ['from-gray-400 to-gray-500', 'from-yellow-400 to-yellow-600', 'from-orange-400 to-orange-600'];
+  
+  podium.innerHTML = top3.map(function(user, idx) {
+    return `
+      <div class="text-center">
+        <div class="relative inline-block">
+          <div class="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br ${colors[idx]} flex items-center justify-center text-white text-2xl md:text-3xl font-bold border-4 border-tl-bg mx-auto overflow-hidden">
+            ${user.avatar ? '<img src="' + user.avatar + '" class="w-full h-full object-cover">' : user.username.substring(0,2).toUpperCase()}
+          </div>
+          <div class="absolute -top-2 -right-2 w-8 h-8 rounded-full ${getRankClass(user.rank)} flex items-center justify-center text-white font-bold text-sm">
+            ${user.rank}
+          </div>
+        </div>
+        <h3 class="font-bold mt-3">${escapeHtml(user.username)}</h3>
+        <p class="text-xs text-tl-muted">Level ${user.level}</p>
+        <p class="text-xl font-bold text-tl-yellow mt-1">${user.reputation}</p>
+        <p class="text-xs text-tl-muted">reputasi</p>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTable() {
+  const start = (currentPage - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  const pageUsers = allUsers.slice(start, end);
+  
+  const tbody = document.getElementById('leaderboard-body');
+  
+  if (pageUsers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-tl-muted">Tidak ada data</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = pageUsers.map(function(user) {
+    var rankClass = '';
+    if (user.rank === 1) rankClass = 'text-tl-yellow';
+    else if (user.rank === 2) rankClass = 'text-gray-400';
+    else if (user.rank === 3) rankClass = 'text-orange-400';
+    else rankClass = 'text-tl-muted';
+    
+    return `
+      <tr class="border-b border-tl-border/50 hover:bg-tl-red/5 transition-colors">
+        <td class="text-center px-4 py-3">
+          <span class="font-bold ${rankClass}">#${user.rank}</span>
+        </td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-tl-red to-tl-orange flex items-center justify-center text-white text-xs font-bold overflow-hidden">
+              ${user.avatar ? '<img src="' + user.avatar + '" class="w-full h-full object-cover">' : user.username.substring(0,2).toUpperCase()}
+            </div>
+            <span class="font-medium">${escapeHtml(user.username)}</span>
+          </div>
+        </td>
+        <td class="text-center px-4 py-3">
+          <span class="px-2 py-1 rounded text-xs font-mono bg-tl-red/20 text-tl-red">${user.level}</span>
+        </td>
+        <td class="text-center px-4 py-3 font-mono font-bold text-tl-yellow">${user.reputation}</td>
+        <td class="text-center px-4 py-3 text-tl-text-dim">${user.total_reports || 0}</td>
+        <td class="text-center px-4 py-3 text-tl-text-dim">${user.total_votes_received || 0}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function renderPagination() {
+  var totalPages = Math.ceil(allUsers.length / itemsPerPage);
+  var pagination = document.getElementById('pagination');
+  
+  if (totalPages <= 1) {
+    pagination.innerHTML = '';
+    return;
+  }
+  
+  var html = '';
+  for (var i = 1; i <= Math.min(totalPages, 10); i++) {
+    var activeClass = (currentPage === i) ? 'bg-tl-red text-white' : 'bg-tl-surface border border-tl-border text-tl-text-dim hover:border-tl-red/30';
+    html += '<button onclick="goToPage(' + i + ')" class="px-3 py-1 rounded-lg text-sm ' + activeClass + ' transition-all">' + i + '</button>';
+  }
+  pagination.innerHTML = html;
+}
+
+function goToPage(page) {
+  currentPage = page;
+  renderTable();
+  window.scrollTo({ top: 300, behavior: 'smooth' });
+}
+
+loadLeaderboard();
+</script>
+
+</body>
+</html>
