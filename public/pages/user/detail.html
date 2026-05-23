@@ -573,7 +573,7 @@
   // ── Load Detail ─────────────────────────────────────────────────────────
   async function loadThreat() {
     try {
-      const res = await fetch('/api/threats/' + threatId);
+    const res = await fetch('/api/threats/' + threatId + '?_=' + Date.now());
 
       if (res.status === 404) {
         document.getElementById('loading').classList.add('hidden');

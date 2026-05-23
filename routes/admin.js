@@ -117,35 +117,57 @@ router.delete('/reports/:id', verifyToken, isAdmin, async (req, res) => {
   }
 });
 
-// =====================================================
-// PUT /api/admin/reports/:id/verify — Verifikasi laporan
-// =====================================================
+// PUT /api/admin/reports/:id/verify — Verifikasi laporan oleh admin (langsung HIGH RISK)
 router.put('/reports/:id/verify', verifyToken, isAdmin, async (req, res) => {
   try {
     const reportId = req.params.id;
+    const adminId = req.user.id;
     
-    const [threat] = await db.query('SELECT verified FROM threats WHERE id = ?', [reportId]);
+    // Cek laporan
+    const [threat] = await db.query('SELECT * FROM threats WHERE id = ?', [reportId]);
     if (threat.length === 0) {
       return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
     }
     
+    // Jika sudah verified, unverify; jika belum, verify
     const newVerified = threat[0].verified ? 0 : 1;
     
-    await db.query('UPDATE threats SET verified = ? WHERE id = ?', [newVerified, reportId]);
-    
     if (newVerified === 1) {
+      // 🔥 ADMIN VERIFIKASI: langsung set verified + dangerous + count 1
       await db.query(
-        'INSERT INTO threat_verifications (threat_id, verifier_id) VALUES (?, ?)',
-        [reportId, req.user.id]
+        'UPDATE threats SET verified = 1, status = "dangerous", verification_count = 1, verification_list = ? WHERE id = ?',
+        [JSON.stringify([adminId]), reportId]
       );
+      
+      // Catat log verifikasi
+      await db.query(
+        'INSERT INTO threat_verifications (threat_id, verifier_id, verified_at) VALUES (?, ?, NOW())',
+        [reportId, adminId]
+      );
+      
+      // Bonus reputasi untuk pembuat laporan (+50)
+      const [threatData] = await db.query('SELECT user_id FROM threats WHERE id = ?', [reportId]);
+      await db.query('UPDATE users SET reputation = reputation + 50, level = FLOOR(reputation / 100) + 1 WHERE id = ?', [threatData[0].user_id]);
+      
+      res.json({ 
+        message: '✅ Laporan diverifikasi oleh ADMIN dan menjadi HIGH RISK!',
+        verified: true,
+        status: 'dangerous'
+      });
+    } else {
+      // Unverify (batalkan verifikasi)
+      await db.query(
+        'UPDATE threats SET verified = 0, status = "pending", verification_count = 0, verification_list = NULL WHERE id = ?',
+        [reportId]
+      );
+      res.json({ 
+        message: 'Verifikasi laporan dibatalkan.',
+        verified: false,
+        status: 'pending'
+      });
     }
-    
-    res.json({ 
-      message: newVerified ? 'Laporan berhasil diverifikasi.' : 'Verifikasi laporan dibatalkan.',
-      verified: newVerified === 1
-    });
   } catch (err) {
-    console.error('Error verifying report:', err);
+    console.error('Error in admin verify:', err);
     res.status(500).json({ message: 'Terjadi kesalahan server.' });
   }
 });

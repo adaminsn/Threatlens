@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require('../config/db');
 const { verifyToken } = require('../middleware/auth');
 require('dotenv').config();
+console.log('API Key loaded?', !!process.env.VIRUSTOTAL_API_KEY); // Debug
+
 
 // ── Helper: mapping status DB → level feed ──────────────────────────────
 function statusToLevel(status) {
@@ -47,16 +49,17 @@ function formatThreat(t) {
 // VIRUSTOTAL API INTEGRATION
 // =====================================================
 
-// Fungsi untuk mengecek URL di VirusTotal
 async function checkVirusTotalURL(url) {
   try {
     const apiKey = process.env.VIRUSTOTAL_API_KEY;
     if (!apiKey || apiKey === 'your_api_key_here') {
+      console.log('❌ API Key tidak valid');
       return { scanned: false, message: 'API Key tidak dikonfigurasi' };
     }
     
     const encodedUrl = encodeURIComponent(url);
     
+    // Kirim URL untuk di-scan
     const scanResponse = await fetch('https://www.virustotal.com/api/v3/urls', {
       method: 'POST',
       headers: {
@@ -67,28 +70,44 @@ async function checkVirusTotalURL(url) {
     });
     
     const scanData = await scanResponse.json();
+    console.log('Scan response:', JSON.stringify(scanData, null, 2));
+    
+    // Ambil scan ID
     const scanId = scanData.data?.id;
+    if (!scanId) {
+      console.log('❌ Tidak dapat scan URL');
+      return { scanned: false, error: 'Gagal scan URL' };
+    }
     
-    if (!scanId) return { scanned: false, error: 'Gagal scan URL' };
+    // Tunggu 5 detik
+    await new Promise(resolve => setTimeout(resolve, 5000));
     
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
+    // Ambil hasil analisis
     const resultResponse = await fetch(`https://www.virustotal.com/api/v3/analyses/${scanId}`, {
       headers: { 'x-apikey': apiKey }
     });
     
     const resultData = await resultResponse.json();
+    console.log('Analysis result:', JSON.stringify(resultData, null, 2));
+    
+    // Parse stats dengan benar
     const stats = resultData.data?.attributes?.stats;
     
     if (stats) {
-      const total = (stats.malicious || 0) + (stats.suspicious || 0) + (stats.undetected || 0) + (stats.harmless || 0);
       const malicious = stats.malicious || 0;
+      const suspicious = stats.suspicious || 0;
+      const undetected = stats.undetected || 0;
+      const harmless = stats.harmless || 0;
+      const total = malicious + suspicious + undetected + harmless;
+      
       const riskScore = total > 0 ? (malicious / total) * 100 : 0;
+      
+      console.log(`📊 Hasil: ${malicious}/${total} engine mendeteksi (${riskScore}%)`);
       
       return {
         scanned: true,
         malicious_count: malicious,
-        suspicious_count: stats.suspicious || 0,
+        suspicious_count: suspicious,
         total_engines: total,
         risk_score: riskScore,
         recommended_level: riskScore >= 50 ? 'dangerous' : (riskScore >= 20 ? 'suspicious' : 'safe'),
@@ -96,14 +115,14 @@ async function checkVirusTotalURL(url) {
       };
     }
     
-    return { scanned: false };
+    return { scanned: false, error: 'Tidak ada stats' };
+    
   } catch (err) {
     console.error('VirusTotal URL error:', err.message);
     return { scanned: false, error: err.message };
   }
 }
 
-// Fungsi untuk mengecek IP Address di VirusTotal
 async function checkVirusTotalIP(ip) {
   try {
     const apiKey = process.env.VIRUSTOTAL_API_KEY;
@@ -145,38 +164,38 @@ async function checkVirusTotalIP(ip) {
   }
 }
 
-// Fungsi untuk mengecek File Hash di VirusTotal
 async function checkVirusTotalHash(hash) {
   try {
     const apiKey = process.env.VIRUSTOTAL_API_KEY;
-    if (!apiKey || apiKey === 'your_api_key_here') {
-      return { scanned: false, message: 'API Key tidak dikonfigurasi' };
-    }
+    if (!apiKey) return { scanned: false };
     
+    // Langsung ambil data hash tanpa submit
     const response = await fetch(`https://www.virustotal.com/api/v3/files/${hash}`, {
       headers: { 'x-apikey': apiKey }
     });
     
+    console.log('Hash response status:', response.status);
+    
     if (response.status === 404) {
-      return { scanned: false, not_found: true, message: 'Hash tidak ditemukan di database VirusTotal' };
+      return { scanned: false, not_found: true };
     }
     
     const data = await response.json();
     const stats = data.data?.attributes?.last_analysis_stats;
     
     if (stats) {
-      const total = (stats.malicious || 0) + (stats.suspicious || 0) + (stats.undetected || 0) + (stats.harmless || 0);
       const malicious = stats.malicious || 0;
+      const total = (stats.malicious || 0) + (stats.undetected || 0) + (stats.harmless || 0);
       const riskScore = total > 0 ? (malicious / total) * 100 : 0;
+      
+      console.log(`Hash result: ${malicious}/${total} engines detected (${riskScore}%)`);
       
       return {
         scanned: true,
         malicious_count: malicious,
-        suspicious_count: stats.suspicious || 0,
         total_engines: total,
         risk_score: riskScore,
-        recommended_level: riskScore >= 50 ? 'dangerous' : (riskScore >= 20 ? 'suspicious' : 'safe'),
-        stats: stats
+        recommended_level: riskScore >= 50 ? 'dangerous' : (riskScore >= 20 ? 'suspicious' : 'safe')
       };
     }
     
@@ -187,7 +206,6 @@ async function checkVirusTotalHash(hash) {
   }
 }
 
-// Fungsi untuk mengecek Domain di VirusTotal
 async function checkVirusTotalDomain(domain) {
   try {
     const apiKey = process.env.VIRUSTOTAL_API_KEY;
@@ -229,7 +247,6 @@ async function checkVirusTotalDomain(domain) {
   }
 }
 
-// Main function untuk cek berdasarkan tipe
 async function checkWithVirusTotal(indicator, type) {
   try {
     switch(type) {
@@ -269,7 +286,6 @@ router.get('/', async (req, res) => {
       ORDER BY t.created_at DESC
     `);
     
-    // Parse virustotal_result dari JSON string
     const formattedRows = rows.map(row => {
       if (row.virustotal_result) {
         try {
@@ -366,9 +382,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// =====================================================
 // POST /api/threats — submit laporan baru (dengan VirusTotal)
-// =====================================================
 router.post('/', verifyToken, async (req, res) => {
   try {
     const { title, indicator, type, category, description, status } = req.body;
@@ -395,8 +409,8 @@ router.post('/', verifyToken, async (req, res) => {
         checked_at: new Date().toISOString()
       };
       
-      // Jika VirusTotal merekomendasikan level, gunakan sebagai status awal
-      if (vtResult.recommended_level && threatStatus === 'pending') {
+      // 🔥 UPDATE STATUS BERDASARKAN VIRUSTOTAL
+      if (vtResult.recommended_level) {
         threatStatus = vtResult.recommended_level;
         console.log(`📊 VirusTotal recommendation: ${vtResult.recommended_level} (${vtResult.malicious_count}/${vtResult.total_engines} engines detected)`);
       }
@@ -408,19 +422,20 @@ router.post('/', verifyToken, async (req, res) => {
       virusTotalResult = { scanned: false, message: 'Tidak ditemukan di database VirusTotal' };
     }
 
-    // Simpan ke database
+    // Simpan ke database dengan status yang sudah di-update
     const [result] = await db.query(
       'INSERT INTO threats (user_id, title, indicator, type, category, description, status, virustotal_result) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [req.user.id, title, indicator, type, category, description, threatStatus, JSON.stringify(virusTotalResult)]
     );
 
-    // Update reputasi user +10 untuk submit laporan
+    // Update reputasi user +10
     await db.query('UPDATE users SET reputation = reputation + 10 WHERE id = ?', [req.user.id]);
     await db.query('UPDATE users SET level = FLOOR(reputation / 100) + 1 WHERE id = ?', [req.user.id]);
 
     res.status(201).json({ 
       message: 'Laporan berhasil disubmit!', 
       id: result.insertId,
+      status: threatStatus,  // 🔥 KIRIM STATUS KE FRONTEND
       virusTotal: virusTotalResult
     });
   } catch (err) {
@@ -438,7 +453,6 @@ router.post('/votes', verifyToken, async (req, res) => {
     const userId = req.user.id;
     const userLevel = req.user.level || 1;
 
-    // Cek apakah sudah pernah vote
     const [existing] = await db.query(
       'SELECT * FROM votes WHERE user_id = ? AND threat_id = ?',
       [userId, threat_id]
@@ -447,50 +461,43 @@ router.post('/votes', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Anda sudah memberikan vote untuk laporan ini.' });
     }
 
-    // Hitung bobot vote (level 50+ = 3 poin, lainnya = 1 poin)
     let weight = 1;
     if (userLevel >= 50) weight = 3;
 
-    // Vote value: dangerous = +weight, safe = -weight
     let voteValue = 0;
     if (vote === 'dangerous') voteValue = weight;
     else if (vote === 'safe') voteValue = -weight;
 
-    // Simpan vote
     await db.query(
       'INSERT INTO votes (user_id, threat_id, vote, weight) VALUES (?, ?, ?, ?)',
       [userId, threat_id, vote, weight]
     );
 
-    // Update threat vote score
     await db.query(
       'UPDATE threats SET vote_score = vote_score + ?, vote_count_total = vote_count_total + 1 WHERE id = ?',
       [voteValue, threat_id]
     );
 
-    // Ambil data terbaru
     const [threat] = await db.query(
       'SELECT vote_score, vote_count_total, status FROM threats WHERE id = ?',
       [threat_id]
     );
 
-    // Hitung persentase dan update status jika sudah 10 vote
     const totalVotes = threat[0].vote_count_total;
     const score = threat[0].vote_score;
     
     let newStatus = threat[0].status;
     
     if (totalVotes >= 10) {
-      // Hitung persentase setuju (max score = totalVotes * 3)
       const maxPossibleScore = totalVotes * 3;
       const percentage = (score / maxPossibleScore) * 100;
       
       if (percentage >= 70) {
-        newStatus = 'dangerous';  // HIGH RISK
+        newStatus = 'dangerous';
       } else if (percentage >= 30) {
-        newStatus = 'suspicious'; // MEDIUM RISK
+        newStatus = 'suspicious';
       } else {
-        newStatus = 'safe';       // LOW RISK
+        newStatus = 'safe';
       }
       
       await db.query('UPDATE threats SET status = ? WHERE id = ?', [newStatus, threat_id]);
@@ -517,7 +524,6 @@ router.get('/votes/:threat_id', async (req, res) => {
   try {
     const threatId = req.params.threat_id;
     
-    // Hitung vote
     const [votes] = await db.query(`
       SELECT 
         SUM(CASE WHEN vote = 'dangerous' THEN weight ELSE 0 END) as dangerous_score,
@@ -527,7 +533,6 @@ router.get('/votes/:threat_id', async (req, res) => {
       WHERE threat_id = ?
     `, [threatId]);
     
-    // Ambil status threat
     const [threat] = await db.query('SELECT status, vote_score, vote_count_total FROM threats WHERE id = ?', [threatId]);
     
     res.json({
@@ -615,7 +620,6 @@ router.put('/:id/verify', verifyToken, async (req, res) => {
     const userId = req.user.id;
     const userRole = req.user.role;
     
-    // Ambil data user untuk cek level
     const [userRows] = await db.query('SELECT level, reputation, username FROM users WHERE id = ?', [userId]);
     if (userRows.length === 0) {
       return res.status(404).json({ message: 'User tidak ditemukan.' });
@@ -624,7 +628,6 @@ router.put('/:id/verify', verifyToken, async (req, res) => {
     const user = userRows[0];
     const userLevel = user.level || 1;
     
-    // Cek apakah user bisa verifikasi (level minimal 50 ATAU admin)
     const canVerify = (userRole === 'admin') || (userLevel >= 50);
     
     if (!canVerify) {
@@ -635,7 +638,6 @@ router.put('/:id/verify', verifyToken, async (req, res) => {
       });
     }
 
-    // Cek apakah laporan ada
     const [threatRows] = await db.query('SELECT * FROM threats WHERE id = ?', [req.params.id]);
     if (threatRows.length === 0) {
       return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
@@ -653,26 +655,41 @@ router.put('/:id/verify', verifyToken, async (req, res) => {
       }
     }
 
-    // Cek apakah user sudah pernah verifikasi laporan ini
     if (currentVerificationList.includes(userId)) {
       return res.status(400).json({ message: 'Anda sudah pernah memverifikasi laporan ini.' });
     }
 
-    // Cek apakah user sendiri yang membuat laporan
     if (threat.user_id === userId && userRole !== 'admin') {
       return res.status(403).json({ message: 'Tidak bisa memverifikasi laporan sendiri.' });
     }
 
-    // Tambah verifikasi
     currentVerificationList.push(userId);
     const newVerificationCount = currentVerificationList.length;
     let isVerified = false;
+    let newStatus = threat.status;
     let message = '';
 
-    // Cek apakah sudah mencapai 5 verifikasi
     if (newVerificationCount >= 5) {
       isVerified = true;
-      message = `🎉 Laporan telah mencapai 5 verifikasi dan resmi TERVERIFIKASI! +5 reputasi untuk Anda, +50 untuk pembuat laporan.`;
+      
+      // Tentukan status berdasarkan vote atau default ke dangerous
+      newStatus = 'dangerous';
+      
+      if (threat.vote_score) {
+        const totalVotes = threat.vote_count_total || 0;
+        const maxScore = totalVotes * 3;
+        const percentage = totalVotes > 0 ? (threat.vote_score / maxScore) * 100 : 0;
+        
+        if (percentage >= 70) {
+          newStatus = 'dangerous';
+        } else if (percentage >= 30) {
+          newStatus = 'suspicious';
+        } else {
+          newStatus = 'safe';
+        }
+      }
+      
+      message = `🎉 Laporan telah mencapai 5 verifikasi dan resmi TERVERIFIKASI! Status diubah menjadi ${newStatus.toUpperCase()}. +5 reputasi untuk Anda, +50 untuk pembuat laporan.`;
     } else {
       message = `✅ Verifikasi berhasil! (${newVerificationCount}/5 verifikasi) +5 reputasi.`;
     }
@@ -681,23 +698,19 @@ router.put('/:id/verify', verifyToken, async (req, res) => {
     await connection.beginTransaction();
 
     try {
-      // Update threat
       await connection.query(
-        'UPDATE threats SET verified = ?, verification_count = ?, verification_list = ? WHERE id = ?',
-        [isVerified ? 1 : 0, newVerificationCount, JSON.stringify(currentVerificationList), req.params.id]
+        'UPDATE threats SET verified = ?, verification_count = ?, verification_list = ?, status = ? WHERE id = ?',
+        [isVerified ? 1 : 0, newVerificationCount, JSON.stringify(currentVerificationList), newStatus, req.params.id]
       );
 
-      // Catat log verifikasi
       await connection.query(
         'INSERT INTO threat_verifications (threat_id, verifier_id, verified_at) VALUES (?, ?, NOW())',
         [req.params.id, userId]
       );
 
-      // Update reputasi verifikator (+5)
       await connection.query('UPDATE users SET reputation = reputation + 5 WHERE id = ?', [userId]);
       await connection.query('UPDATE users SET level = FLOOR(reputation / 100) + 1 WHERE id = ?', [userId]);
 
-      // Jika sudah mencapai 5 verifikasi, bonus untuk pembuat laporan
       if (isVerified) {
         await connection.query('UPDATE users SET reputation = reputation + 50 WHERE id = ?', [threat.user_id]);
         await connection.query('UPDATE users SET level = FLOOR(reputation / 100) + 1 WHERE id = ?', [threat.user_id]);
@@ -709,7 +722,8 @@ router.put('/:id/verify', verifyToken, async (req, res) => {
         message: message,
         verified: isVerified,
         verificationCount: newVerificationCount,
-        neededVerifications: 5 - newVerificationCount
+        neededVerifications: 5 - newVerificationCount,
+        newStatus: newStatus
       });
       
     } catch (err) {
