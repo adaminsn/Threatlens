@@ -287,9 +287,7 @@
 </div>
 
 <script>
-// ============================================================
 // AUTH CHECK
-// ============================================================
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || 'null');
 
@@ -297,18 +295,14 @@ if (!token || !user || user.role !== 'admin') {
   window.location.href = '../../login.html';
 }
 
-// ============================================================
 // GLOBAL VARIABLES
-// ============================================================
 let allUsers = [];
 let currentPage = 1;
 const itemsPerPage = 15;
 let currentDeleteId = null;
 let currentEditId = null;
 
-// ============================================================
 // HELPER FUNCTIONS
-// ============================================================
 function showNotif(msg, type = 'error') {
   const notifDiv = document.createElement('div');
   notifDiv.className = `fixed bottom-5 right-5 z-50 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-500/20 text-tl-red border border-red-500/30' : 'bg-green-500/20 text-tl-green border border-green-500/30'} backdrop-blur-sm`;
@@ -343,9 +337,7 @@ function formatDate(dateStr) {
   });
 }
 
-// ============================================================
 // LOAD USERS
-// ============================================================
 async function loadUsers() {
   try {
     const response = await fetch('/api/admin/users', {
@@ -483,9 +475,7 @@ function goToPage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ============================================================
 // EDIT USER
-// ============================================================
 async function openEditModal(id) {
   const targetUser = allUsers.find(u => u.id === id);
   if (!targetUser) return;
@@ -546,9 +536,7 @@ async function saveUser() {
   spinner.style.display = 'none';
 }
 
-// ============================================================
 // DELETE USER
-// ============================================================
 function openDeleteModal(id, username) {
   currentDeleteId = id;
   document.getElementById('delete-username').textContent = username;
@@ -589,9 +577,7 @@ async function confirmDelete() {
   spinner.style.display = 'none';
 }
 
-// ============================================================
 // FILTER EVENT LISTENERS
-// ============================================================
 document.getElementById('filter-role').addEventListener('change', () => {
   currentPage = 1;
   renderUsers();
@@ -604,9 +590,7 @@ document.getElementById('search-input').addEventListener('input', () => {
   renderPagination();
 });
 
-// ============================================================
 // INIT
-// ============================================================
 loadUsers();
 </script>
 </body>

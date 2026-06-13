@@ -263,9 +263,8 @@
 </div>
 
 <script>
-// ============================================================
 // AUTH CHECK
-// ============================================================
+ 
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user') || 'null');
 
@@ -273,16 +272,12 @@ if (!token || !user || user.role !== 'admin') {
   window.location.href = '../../login.html';
 }
 
-// ============================================================
 // GLOBAL VARIABLES
-// ============================================================
 let allReports = [];
 let currentPage = 1;
 const itemsPerPage = 15;
 
-// ============================================================
 // HELPER FUNCTIONS
-// ============================================================
 function logout() {
   localStorage.clear();
   window.location.href = '../../pages/login.html';
@@ -310,9 +305,7 @@ function formatDate(dateStr) {
   });
 }
 
-  // ============================================================
 // LOAD REPORTS WITH VERIFICATION DATA
-// ============================================================
 async function loadVerifications() {
   try {
     console.log('=== LOADING VERIFICATIONS ===');
@@ -554,9 +547,7 @@ document.getElementById('verifier-modal').addEventListener('click', function(e) 
   if (e.target === this) closeModal();
 });
 
-// ============================================================
 // INIT
-// ============================================================
 loadVerifications();
 </script>
 </body>

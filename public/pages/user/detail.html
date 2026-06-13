@@ -643,7 +643,6 @@
 
   // ── Multi Verification ───────────────────────────────────────────
   async function loadVerificationData() {
-    // 🔥 Refresh user data dari server TERLEBIH DAHULU
     await refreshUserData();
     
     try {
@@ -667,7 +666,7 @@
       }
       const isVerified = data.verified;
       
-      // 🔥 Gunakan user yang sudah di-refresh
+      // Gunakan user yang sudah di-refresh
       const userLevel = user.level || 1;
       const userRole = user.role || 'user';
       
@@ -778,7 +777,6 @@
       
       if (response.ok) {
         showNotif(result.message, 'success');
-        // Refresh user data dulu, lalu reload halaman
         await refreshUserData();
         setTimeout(() => window.location.reload(), 1000);
       } else {

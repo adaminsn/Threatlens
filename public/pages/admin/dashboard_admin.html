@@ -328,9 +328,7 @@ if (user.role !== 'admin') {
   window.location.href = '../user/dashboard_user.html';
 }
 
-// ============================================================
 // HELPER FUNCTIONS
-// ============================================================
 function showNotif(msg, type = 'error') {
   const container = document.getElementById('notif-container');
   if (!container) {
@@ -373,9 +371,7 @@ function formatDate(dateStr) {
   });
 }
 
-// ============================================================
 // LOAD DASHBOARD DATA
-// ============================================================
 async function loadDashboard() {
   try {
     const response = await fetch('/api/admin/stats', {
@@ -406,9 +402,7 @@ async function loadDashboard() {
   }
 }
 
-// ============================================================
 // LOAD RECENT REPORTS
-// ============================================================
 async function loadRecentReports() {
   try {
     const response = await fetch('/api/admin/reports', {
@@ -453,9 +447,7 @@ async function loadRecentReports() {
   }
 }
 
-// ============================================================
 // LOAD RECENT USERS
-// ============================================================
 async function loadRecentUsers() {
   try {
     const response = await fetch('/api/admin/users', {
@@ -495,9 +487,7 @@ async function loadRecentUsers() {
   }
 }
 
-// ============================================================
 // LOAD CHART DATA & RENDER
-// ============================================================
 async function loadChartData() {
   try {
     const response = await fetch('/api/admin/reports', {
@@ -578,9 +568,8 @@ async function loadChartData() {
   }
 }
 
-// ============================================================
 // INIT
-// ============================================================
+
 async function init() {
   await loadDashboard();
   await loadRecentReports();

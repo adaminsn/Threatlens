@@ -1038,10 +1038,7 @@ async function changePassword() {
   btn.disabled = false;
 }
 
-// ============================================================
 // BADGE SYSTEM
-// ============================================================
-
 const badgesList = [
   {
     id: 'first_report',
@@ -1406,9 +1403,7 @@ async function getUserRank() {
   return 0;
 }
 
-// ============================================================
 // REFRESH USER DATA
-// ============================================================
 async function refreshUserData() {
   try {
     const response = await fetch('/api/auth/me', {
@@ -1432,9 +1427,7 @@ async function refreshUserData() {
   return null;
 }
 
-// ============================================================
 // INIT
-// ============================================================
 async function init() {
   await refreshUserData();
   await loadProfile();
