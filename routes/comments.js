@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
-const { verifyToken } = require('../middleware/auth');
+const db = require('../src/config/database');
+const { verifyToken } = require('../src/middlewares/auth');
 
 // GET komentar by threat_id
 router.get('/:threat_id', async (req, res) => {

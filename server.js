@@ -1,40 +1,71 @@
 const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const http = require('http');
-const { Server } = require('socket.io');
 const path = require('path');
+const dotenv = require('dotenv');
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
+const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/threats', require('./routes/threats'));
-app.use('/api/votes', require('./routes/votes'));
-app.use('/api/comments', require('./routes/comments'));
-app.use('/api/admin', require('./routes/admin')); // 🔥 Route admin
-
-// Socket.io
-io.on('connection', (socket) => {
-  console.log('User terhubung:', socket.id);
-  socket.on('disconnect', () => {
-    console.log('User terputus:', socket.id);
-  });
+// Logging middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
 });
 
-// Jalankan server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`ThreatLens berjalan di http://localhost:${PORT}`);
+// =====================================================
+// STATIC FILES
+// =====================================================
+app.use(express.static('public'));
+app.use(express.static('pages'));
+
+// 🔥 INI YANG PENTING - buat akses file uploads
+app.use('/uploads', express.static('uploads'));
+
+// =====================================================
+// API ROUTES
+// =====================================================
+app.use('/api/admin', require('./routes/admin'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/threats', require('./routes/threats'));
+app.use('/api/comments', require('./routes/comments'));
+app.use('/api/votes', require('./routes/votes'));
+
+// =====================================================
+// DEFAULT ROUTE
+// =====================================================
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'pages', 'index.html'));
+});
+
+// =====================================================
+// 404 HANDLER
+// =====================================================
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: "Endpoint tidak ditemukan." });
+});
+
+app.use((req, res) => {
+  res.status(404).send('<h1>404 - Halaman Tidak Ditemukan</h1>');
+});
+
+// =====================================================
+// ERROR HANDLER
+// =====================================================
+app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  res.status(500).json({ message: 'Terjadi kesalahan server.' });
+});
+
+// =====================================================
+// START SERVER
+// =====================================================
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🔐 Login: http://localhost:${PORT}/index.html`);
 });

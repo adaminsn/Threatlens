@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
-const { verifyToken } = require('../middleware/auth');
+const db = require('../src/config/database');
+const { verifyToken } = require('../src/middlewares/auth');
 require('dotenv').config();
 console.log('API Key loaded?', !!process.env.VIRUSTOTAL_API_KEY); // Debug
 

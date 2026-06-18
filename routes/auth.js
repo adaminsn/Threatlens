@@ -2,19 +2,22 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/db');
-const { verifyToken } = require('../middleware/auth');
+const db = require('../src/config/database');
+const { verifyToken } = require('../src/middlewares/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
+
+// Import email service
+const { sendVerificationEmail } = require('../src/services/emailService');
 
 // =====================================================
 // KONFIGURASI MULTER (Upload Foto Profil)
 // =====================================================
 
 // Tentukan folder penyimpanan
-const uploadDir = './uploads/avatars';
+const uploadDir = path.join(__dirname, '../uploads/avatars');
 // Buat folder jika belum ada
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -26,7 +29,6 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // Format nama: userId-timestamp.ext (contoh: 3-1712345678901.jpg)
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
     cb(null, `user-${req.user.id}-${uniqueSuffix}${ext}`);
@@ -49,12 +51,31 @@ const upload = multer({
 });
 
 // =====================================================
-// REGISTER
+// REGISTER - Dengan Verifikasi Email
 // =====================================================
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
+    // Validasi input
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Semua field harus diisi.' });
+    }
+
+    if (username.length < 3) {
+      return res.status(400).json({ message: 'Username minimal 3 karakter.' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password minimal 6 karakter.' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Format email tidak valid.' });
+    }
+
+    // Cek user existing
     const [existingUser] = await db.query(
       'SELECT * FROM users WHERE email = ? OR username = ?',
       [email, username]
@@ -66,57 +87,85 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.query(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+    // INSERT dengan email_verified = 0
+    const [result] = await db.query(
+      'INSERT INTO users (username, email, password, email_verified, created_at, reputation, level) VALUES (?, ?, ?, 0, NOW(), 0, 1)',
       [username, email, hashedPassword]
     );
 
-    res.status(201).json({ message: 'Registrasi berhasil! Silakan login.' });
+    // Kirim email verifikasi
+    await sendVerificationEmail(email, username);
+
+    res.status(201).json({ 
+      message: 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi.',
+      userId: result.insertId
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Register error:', err);
     res.status(500).json({ message: 'Terjadi kesalahan server.' });
   }
 });
 
 // =====================================================
-// LOGIN
+// LOGIN - Dengan Pengecekan Verifikasi Email
 // =====================================================
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email dan password wajib diisi.' });
+    }
+
     const [users] = await db.query(
-      'SELECT id, username, email, password, role, reputation, level, avatar, bio, created_at FROM users WHERE email = ?',
+      'SELECT id, username, email, password, role, reputation, level, avatar, bio, email_verified, created_at FROM users WHERE email = ?',
       [email]
     );
 
     if (users.length === 0) {
-      return res.status(400).json({ message: 'Email atau password salah.' });
+      return res.status(401).json({ message: 'Email atau password salah.' });
     }
 
     const user = users[0];
-
     const isMatch = await bcrypt.compare(password, user.password);
+    
     if (!isMatch) {
-      return res.status(400).json({ message: 'Email atau password salah.' });
+      return res.status(401).json({ message: 'Email atau password salah.' });
     }
 
-    // UPDATE last_activity saat login
+    // Cek apakah email sudah diverifikasi
+    if (user.email_verified === 0) {
+      return res.status(403).json({ 
+        message: 'Email belum diverifikasi. Silakan cek inbox Anda untuk link verifikasi.',
+        needVerification: true,
+        email: user.email
+      });
+    }
+
+    // Update last_activity
     await db.query('UPDATE users SET last_activity = NOW() WHERE id = ?', [user.id]);
 
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: user.role, level: user.level || 1 },
-      process.env.JWT_SECRET,
+      { 
+        id: user.id, 
+        username: user.username, 
+        role: user.role, 
+        level: user.level || 1,
+        email: user.email
+      },
+      process.env.JWT_SECRET || 'threatlens_secret_key',
       { expiresIn: '24h' }
     );
 
-    console.log('User login:', { 
+    console.log('✅ User login:', { 
       id: user.id, 
       username: user.username, 
+      role: user.role,
       level: user.level
     });
 
     res.json({
+      success: true,
       message: 'Login berhasil!',
       token,
       user: {
@@ -124,15 +173,92 @@ router.post('/login', async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
-        reputation: user.reputation,
+        reputation: user.reputation || 0,
         level: user.level || 1,
         avatar: user.avatar || '',
         bio: user.bio || '',
-        created_at: user.created_at
+        created_at: user.created_at,
+        email_verified: user.email_verified
       }
     });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Login error:', err);
+    res.status(500).json({ message: 'Terjadi kesalahan server.' });
+  }
+});
+
+// =====================================================
+// VERIFIKASI EMAIL
+// =====================================================
+router.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ message: 'Token verifikasi tidak ditemukan.' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'threatlens_secret_key');
+    
+    if (decoded.type !== 'email_verification') {
+      return res.status(400).json({ message: 'Token tidak valid.' });
+    }
+
+    const email = decoded.email;
+    const [result] = await db.query(
+      'UPDATE users SET email_verified = 1 WHERE email = ? AND email_verified = 0',
+      [email]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: 'Email sudah terverifikasi atau token tidak valid.' });
+    }
+
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    res.redirect(`${baseUrl}/pages/login.html?verified=true`);
+    
+  } catch (error) {
+    console.error('Verification error:', error);
+    
+    if (error.name === 'TokenExpiredError') {
+      return res.status(400).json({ 
+        message: 'Token sudah kadaluarsa. Silakan minta token baru.' 
+      });
+    }
+    
+    res.status(400).json({ message: 'Token verifikasi tidak valid.' });
+  }
+});
+
+// =====================================================
+// RESEND VERIFICATION EMAIL
+// =====================================================
+router.post('/resend-verification', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email wajib diisi.' });
+    }
+
+    const [users] = await db.query(
+      'SELECT username, email_verified FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.json({ message: 'Jika email terdaftar, link verifikasi akan dikirim.' });
+    }
+
+    if (users[0].email_verified === 1) {
+      return res.json({ message: 'Email sudah terverifikasi.' });
+    }
+
+    await sendVerificationEmail(email, users[0].username);
+    res.json({ message: 'Link verifikasi telah dikirim ulang ke email Anda.' });
+    
+  } catch (err) {
+    console.error('Resend verification error:', err);
     res.status(500).json({ message: 'Terjadi kesalahan server.' });
   }
 });
@@ -149,7 +275,6 @@ router.get('/me', verifyToken, async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ message: 'User tidak ditemukan.' });
     }
-    console.log('📌 /me response:', rows[0]);
     res.json(rows[0]);
   } catch (err) {
     console.error('Error in /me:', err);
@@ -165,18 +290,15 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     const { username, email, bio } = req.body;
     const userId = req.user.id;
 
-    // Validasi input
     if (!username || !email) {
       return res.status(400).json({ message: 'Username dan email wajib diisi.' });
     }
 
-    // Validasi format email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ message: 'Format email tidak valid.' });
     }
 
-    // Cek apakah email sudah digunakan oleh user lain
     const [existingEmail] = await db.query(
       'SELECT id FROM users WHERE email = ? AND id != ?',
       [email, userId]
@@ -185,7 +307,6 @@ router.put('/update-profile', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Email sudah digunakan oleh user lain.' });
     }
 
-    // Cek apakah username sudah digunakan oleh user lain
     const [existingUsername] = await db.query(
       'SELECT id FROM users WHERE username = ? AND id != ?',
       [username, userId]
@@ -194,13 +315,11 @@ router.put('/update-profile', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Username sudah digunakan oleh user lain.' });
     }
 
-    // Update profil user
     await db.query(
       'UPDATE users SET username = ?, email = ?, bio = ? WHERE id = ?',
       [username, email, bio || null, userId]
     );
 
-    // Ambil data user terbaru
     const [rows] = await db.query(
       'SELECT id, username, email, role, bio, avatar, reputation, level, created_at FROM users WHERE id = ?',
       [userId]
@@ -224,7 +343,6 @@ router.put('/change-password', verifyToken, async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     const userId = req.user.id;
 
-    // Validasi input
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ message: 'Password lama dan baru wajib diisi.' });
     }
@@ -233,26 +351,18 @@ router.put('/change-password', verifyToken, async (req, res) => {
       return res.status(400).json({ message: 'Password baru minimal 6 karakter.' });
     }
 
-    // Ambil password lama dari database
     const [rows] = await db.query('SELECT password FROM users WHERE id = ?', [userId]);
     if (rows.length === 0) {
       return res.status(404).json({ message: 'User tidak ditemukan.' });
     }
 
-    // Verifikasi password lama
     const isValid = await bcrypt.compare(oldPassword, rows[0].password);
     if (!isValid) {
       return res.status(400).json({ message: 'Password lama salah.' });
     }
 
-    // Hash password baru
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-    // Update password
-    await db.query('UPDATE users SET password = ? WHERE id = ?', [
-      hashedPassword,
-      userId,
-    ]);
+    await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, userId]);
 
     res.json({ message: 'Password berhasil diubah!' });
   } catch (err) {
@@ -273,7 +383,6 @@ router.post('/upload-avatar', verifyToken, upload.single('avatar'), async (req, 
     const userId = req.user.id;
     const avatarUrl = `/uploads/avatars/${req.file.filename}`;
 
-    // Hapus foto lama jika ada
     const [oldUser] = await db.query('SELECT avatar FROM users WHERE id = ?', [userId]);
     if (oldUser[0]?.avatar && oldUser[0].avatar !== avatarUrl) {
       const oldPath = path.join(__dirname, '..', oldUser[0].avatar);
@@ -282,10 +391,8 @@ router.post('/upload-avatar', verifyToken, upload.single('avatar'), async (req, 
       }
     }
 
-    // Update database dengan avatar baru
     await db.query('UPDATE users SET avatar = ? WHERE id = ?', [avatarUrl, userId]);
 
-    // Ambil data user terbaru
     const [rows] = await db.query(
       'SELECT id, username, email, role, bio, avatar, reputation, level, created_at FROM users WHERE id = ?',
       [userId]
@@ -303,7 +410,7 @@ router.post('/upload-avatar', verifyToken, upload.single('avatar'), async (req, 
 });
 
 // =====================================================
-// GET /api/auth/top-hunters — Top 10/100 berdasarkan reputasi (PUBLIC)
+// GET /api/auth/top-hunters — Top berdasarkan reputasi
 // =====================================================
 router.get('/top-hunters', async (req, res) => {
   try {
@@ -341,7 +448,7 @@ router.get('/top-hunters', async (req, res) => {
 });
 
 // =====================================================
-// GET /api/auth/top-contributors — Top contributor berdasarkan laporan terbanyak (PUBLIC)
+// GET /api/auth/top-contributors — Top berdasarkan laporan
 // =====================================================
 router.get('/top-contributors', async (req, res) => {
   try {
@@ -384,7 +491,7 @@ router.get('/top-contributors', async (req, res) => {
 });
 
 // =====================================================
-// GET /api/auth/online-users — Mendapatkan user yang sedang online
+// GET /api/auth/online-users — User sedang online
 // =====================================================
 router.get('/online-users', async (req, res) => {
   try {
@@ -405,14 +512,11 @@ router.get('/online-users', async (req, res) => {
 });
 
 // =====================================================
-// POST /api/auth/update-activity — Update last_activity user
+// POST /api/auth/update-activity — Update last_activity
 // =====================================================
 router.post('/update-activity', verifyToken, async (req, res) => {
   try {
-    await db.query(
-      'UPDATE users SET last_activity = NOW() WHERE id = ?',
-      [req.user.id]
-    );
+    await db.query('UPDATE users SET last_activity = NOW() WHERE id = ?', [req.user.id]);
     res.json({ success: true });
   } catch (err) {
     console.error('Error update activity:', err);
@@ -421,148 +525,8 @@ router.post('/update-activity', verifyToken, async (req, res) => {
 });
 
 // =====================================================
-// PUT /api/threats/:id/verify — Multi-verifikasi (butuh 5 verifikator)
+// GET /api/auth/achievements — Achievement user
 // =====================================================
-router.put('/:id/verify', verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const userRole = req.user.role;
-    
-    // Ambil data user
-    const [userRows] = await db.query('SELECT level, reputation, username FROM users WHERE id = ?', [userId]);
-    if (userRows.length === 0) {
-      return res.status(404).json({ message: 'User tidak ditemukan.' });
-    }
-    
-    const user = userRows[0];
-    const userLevel = user.level || 1;
-    
-    // Cek apakah user bisa verifikasi (level minimal 50 ATAU admin)
-    const canVerify = (userRole === 'admin') || (userLevel >= 50);
-    
-    if (!canVerify) {
-      return res.status(403).json({ 
-        message: `⚠️ Level ${userLevel} belum cukup untuk memverifikasi. Minimal Level 50.`,
-        requiredLevel: 50,
-        currentLevel: userLevel
-      });
-    }
-
-    // Cek apakah laporan ada
-    const [threatRows] = await db.query('SELECT * FROM threats WHERE id = ?', [req.params.id]);
-    if (threatRows.length === 0) {
-      return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
-    }
-
-    const threat = threatRows[0];
-    const currentVerificationCount = threat.verification_count || 0;
-    const currentVerificationList = threat.verification_list ? JSON.parse(threat.verification_list) : [];
-
-    // Cek apakah user sudah pernah verifikasi laporan ini
-    if (currentVerificationList.includes(userId)) {
-      return res.status(400).json({ message: 'Anda sudah pernah memverifikasi laporan ini.' });
-    }
-
-    // Cek apakah user sendiri yang membuat laporan
-    if (threat.user_id === userId && userRole !== 'admin') {
-      return res.status(403).json({ message: 'Tidak bisa memverifikasi laporan sendiri.' });
-    }
-
-    // Tentukan aksi (verify atau unverify)
-    let isVerified = threat.verified;
-    let newVerificationCount = currentVerificationCount;
-    let newVerificationList = [...currentVerificationList];
-    let action = 'verify';
-
-    // Jika laporan sudah verified, cek apakah user mau unverify (hanya admin)
-    if (isVerified && userRole === 'admin') {
-      // Admin bisa unverify langsung
-      isVerified = false;
-      newVerificationCount = 0;
-      newVerificationList = [];
-      action = 'unverify';
-    } else if (!isVerified) {
-      // Tambah verifikasi baru
-      newVerificationList.push(userId);
-      newVerificationCount = currentVerificationCount + 1;
-      
-      // Cek apakah sudah mencapai 5 verifikasi
-      if (newVerificationCount >= 5) {
-        isVerified = true;
-        action = 'fully_verified';
-      } else {
-        action = 'added_verification';
-      }
-    }
-
-    const connection = await db.getConnection();
-    await connection.beginTransaction();
-
-    try {
-      // Update threat
-      await connection.query(
-        'UPDATE threats SET verified = ?, verification_count = ?, verification_list = ? WHERE id = ?',
-        [isVerified ? 1 : 0, newVerificationCount, JSON.stringify(newVerificationList), req.params.id]
-      );
-
-      // Catat log verifikasi
-      if (action !== 'unverify') {
-        await connection.query(
-          'INSERT INTO threat_verifications (threat_id, verifier_id) VALUES (?, ?)',
-          [req.params.id, userId]
-        );
-      }
-
-      // Update reputasi dan cek achievement
-      if (action === 'added_verification') {
-        // Verifikator +5 reputasi
-        await connection.query('UPDATE users SET reputation = reputation + 5 WHERE id = ?', [userId]);
-        await connection.query('UPDATE users SET level = FLOOR(reputation / 100) + 1 WHERE id = ?', [userId]);
-        
-      } else if (action === 'fully_verified') {
-        // Laporan terverifikasi penuh - kasih bonus ke pembuat laporan
-        await connection.query('UPDATE users SET reputation = reputation + 50 WHERE id = ?', [threat.user_id]);
-        await connection.query('UPDATE users SET level = FLOOR(reputation / 100) + 1 WHERE id = ?', [threat.user_id]);
-        
-        // Bonus untuk semua verifikator
-        for (const verifierId of newVerificationList) {
-          await connection.query('UPDATE users SET reputation = reputation + 10 WHERE id = ?', [verifierId]);
-          await connection.query('UPDATE users SET level = FLOOR(reputation / 100) + 1 WHERE id = ?', [verifierId]);
-        }
-      }
-
-      await connection.commit();
-
-      let message = '';
-      if (action === 'fully_verified') {
-        message = '🎉 Laporan telah mencapai 5 verifikasi dan resmi TERVERIFIKASI! Semua pihak mendapat bonus reputasi!';
-      } else if (action === 'added_verification') {
-        message = `✅ Verifikasi ditambahkan! (${newVerificationCount}/5 verifikasi) +5 reputasi.`;
-      } else if (action === 'unverify') {
-        message = 'Verifikasi laporan dibatalkan oleh admin.';
-      }
-
-      res.json({ 
-        message: message,
-        verified: isVerified,
-        verificationCount: newVerificationCount,
-        neededVerifications: 5 - newVerificationCount,
-        action: action
-      });
-      
-    } catch (err) {
-      await connection.rollback();
-      throw err;
-    } finally {
-      connection.release();
-    }
-  } catch (err) {
-    console.error('Error in verify:', err);
-    res.status(500).json({ message: 'Terjadi kesalahan server.' });
-  }
-});
-
-// GET /api/auth/achievements — Mendapatkan achievement user
 router.get('/achievements', verifyToken, async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -594,7 +558,9 @@ router.get('/achievements', verifyToken, async (req, res) => {
   }
 });
 
-// GET /api/auth/user/:id — Mendapatkan data user by ID (PUBLIC)
+// =====================================================
+// GET /api/auth/user/:id — Data user by ID (PUBLIC)
+// =====================================================
 router.get('/user/:id', async (req, res) => {
   try {
     const [rows] = await db.query(

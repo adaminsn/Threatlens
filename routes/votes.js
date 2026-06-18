@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
-const { verifyToken } = require('../middleware/auth');
+const db = require('../src/config/database');
+const { verifyToken } = require('../src/middlewares/auth');
 
 // GET /api/votes/:threat_id — jumlah vote + cek apakah user sudah vote
 router.get('/:threat_id', verifyToken, async (req, res) => {

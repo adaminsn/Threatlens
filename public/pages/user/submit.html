@@ -73,6 +73,111 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* ===== STYLE UPLOAD AREA (seperti Instagram) ===== */
+    .upload-area {
+      border: 2px dashed #1a2332;
+      border-radius: 16px;
+      padding: 32px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: #0d1218;
+    }
+
+    .upload-area:hover {
+      border-color: #ff2d2d;
+      background: #111820;
+    }
+
+    .upload-area.dragover {
+      border-color: #00e5ff;
+      background: #0a1a2a;
+      box-shadow: 0 0 30px rgba(0,229,255,0.05);
+    }
+
+    .upload-area .upload-icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .upload-area p {
+      color: #8a90a0;
+      font-size: 14px;
+    }
+
+    .upload-area .highlight {
+      color: #ff2d2d;
+      font-weight: 600;
+    }
+
+    .upload-area small {
+      color: #5a6070;
+      font-size: 12px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* ===== PREVIEW GAMBAR ===== */
+    .preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+      margin-bottom: 4px;
+    }
+
+    .preview-item {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid #1a2332;
+      flex-shrink: 0;
+    }
+
+    .preview-item img,
+    .preview-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview-item .remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      background: #ff2d2d;
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      opacity: 0.9;
+    }
+
+    .preview-item .remove:hover {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+
+    .file-count {
+      font-size: 12px;
+      color: #5a6070;
+      font-family: 'Share Tech Mono', monospace;
+      margin-top: 8px;
+      text-align: right;
+    }
   </style>
 </head>
 
@@ -135,6 +240,26 @@
   <!-- Form card -->
   <div class="bg-tl-surface border border-tl-border rounded-2xl p-6 sm:p-8 fade-in-up space-y-6">
 
+    <!-- ====== UPLOAD AREA (seperti Instagram) ====== -->
+    <div>
+      <label class="block text-sm font-semibold mb-2">📎 Lampirkan Bukti <span class="text-tl-muted font-normal">(opsional)</span></label>
+      <div class="upload-area" id="dropArea">
+        <div class="upload-icon">📸</div>
+        <p><span class="highlight">Seret foto dan video</span> di sini</p>
+        <p style="margin-top:4px;">
+          <span style="color:#00e5ff;cursor:pointer;" onclick="document.getElementById('fileInput').click()">
+            Pilih dari komputer
+          </span>
+        </p>
+        <small>Format: JPG, PNG, GIF, MP4 (maks 10MB per file)</small>
+        <input type="file" id="fileInput" accept="image/*,video/*" multiple />
+      </div>
+
+      <!-- Preview gambar/video yang diupload -->
+      <div class="preview-container" id="previewContainer"></div>
+      <div class="file-count" id="fileCount">0 file terpilih</div>
+    </div>
+
     <!-- Tipe Indicator -->
     <div>
       <label class="block text-sm font-semibold mb-2">Tipe Indikator</label>
@@ -196,7 +321,7 @@
     <!-- Info box -->
     <div class="bg-tl-cyan/5 border border-tl-cyan/20 rounded-xl p-4 flex gap-3">
       <svg class="w-5 h-5 text-tl-cyan shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      <p class="text-xs text-tl-text-dim leading-relaxed">Laporan kamu akan langsung masuk ke feed komunitas dan dapat diverifikasi oleh anggota lain melalui sistem voting.</p>
+      <p class="text-xs text-tl-text-dim leading-relaxed">Laporan kamu akan langsung masuk ke feed komunitas dan dapat diverifikasi oleh anggota lain melalui sistem voting. <span class="text-tl-cyan">Bukti gambar</span> akan membantu proses verifikasi!</p>
     </div>
 
     <!-- Tombol submit -->
@@ -215,7 +340,114 @@
 </div>
 
 <script>
-  // Pilih tipe indicator
+  // =========================================
+  // 1. UPLOAD GAMBAR (Drag & Drop + Klik)
+  // =========================================
+  const dropArea = document.getElementById('dropArea');
+  const fileInput = document.getElementById('fileInput');
+  const previewContainer = document.getElementById('previewContainer');
+  const fileCount = document.getElementById('fileCount');
+
+  let uploadedFiles = [];
+
+  // Klik area -> trigger file input
+  dropArea.addEventListener('click', () => fileInput.click());
+
+  // Drag & Drop events
+  dropArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropArea.classList.add('dragover');
+  });
+
+  dropArea.addEventListener('dragleave', () => {
+    dropArea.classList.remove('dragover');
+  });
+
+  dropArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropArea.classList.remove('dragover');
+    if (e.dataTransfer.files.length) {
+      handleFiles(e.dataTransfer.files);
+    }
+  });
+
+  // File input change
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) {
+      handleFiles(fileInput.files);
+      fileInput.value = ''; // reset agar bisa upload file yang sama lagi
+    }
+  });
+
+  function handleFiles(files) {
+    for (let file of files) {
+      // Validasi ukuran (10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File "${file.name}" terlalu besar (maks 10MB)`);
+        continue;
+      }
+      // Validasi tipe
+      if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
+        alert(`File "${file.name}" bukan gambar atau video`);
+        continue;
+      }
+      uploadedFiles.push(file);
+    }
+    renderPreviews();
+    updateFileCount();
+  }
+
+  function renderPreviews() {
+    previewContainer.innerHTML = '';
+    uploadedFiles.forEach((file, index) => {
+      const div = document.createElement('div');
+      div.className = 'preview-item';
+
+      const isVideo = file.type.startsWith('video/');
+      const url = URL.createObjectURL(file);
+
+      if (isVideo) {
+        const video = document.createElement('video');
+        video.src = url;
+        video.muted = true;
+        video.autoplay = false;
+        video.loop = false;
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.objectFit = 'cover';
+        div.appendChild(video);
+      } else {
+        const img = document.createElement('img');
+        img.src = url;
+        div.appendChild(img);
+      }
+
+      // Tombol hapus
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove';
+      removeBtn.textContent = '✕';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        uploadedFiles.splice(index, 1);
+        renderPreviews();
+        updateFileCount();
+        // Revoke URL untuk hindari memory leak
+        URL.revokeObjectURL(url);
+      };
+      div.appendChild(removeBtn);
+
+      previewContainer.appendChild(div);
+    });
+  }
+
+  function updateFileCount() {
+    const count = uploadedFiles.length;
+    fileCount.textContent = count + ' file terpilih' + (count !== 1 ? '' : '');
+  }
+
+  // =========================================
+  // 2. Pilih tipe indicator
+  // =========================================
   let selectedType = 'url';
 
   function selectType(type, el) {
@@ -238,6 +470,9 @@
     document.getElementById('indicator').placeholder = placeholders[type];
   }
 
+  // =========================================
+  // 3. Notifikasi
+  // =========================================
   function showError(msg) {
     document.getElementById('success-box').classList.add('hidden');
     document.getElementById('error-msg').textContent = '⚠ ' + msg;
@@ -251,6 +486,9 @@
     document.getElementById('success-box').classList.remove('hidden');
   }
 
+  // =========================================
+  // 4. Loading state
+  // =========================================
   function setLoading(loading) {
     const btn     = document.getElementById('submit-btn');
     const spinner = document.getElementById('spinner');
@@ -268,6 +506,9 @@
     }
   }
 
+  // =========================================
+  // 5. SUBMIT (dengan upload file)
+  // =========================================
   async function submitThreat() {
     const token       = localStorage.getItem('token');
     const title       = document.getElementById('title').value.trim();
@@ -298,21 +539,27 @@
     setLoading(true);
 
     try {
+      // 🔥 Kirim pakai FormData (bisa bawa file)
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('indicator', indicator);
+      formData.append('type', type);
+      formData.append('category', category);
+      formData.append('description', description);
+      formData.append('status', 'pending'); // Status awal menunggu vote
+
+      // Tambahkan file ke FormData
+      uploadedFiles.forEach((file, index) => {
+        formData.append('files[]', file);
+      });
+
       const response = await fetch('/api/threats', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + token
+          // ⚠️ JANGAN set 'Content-Type'! Biar browser set otomatis dengan boundary
         },
-        // 🔥 TAMBAHKAN status: 'pending'
-        body: JSON.stringify({ 
-          title, 
-          indicator, 
-          type, 
-          category, 
-          description,
-          status: 'pending'  // Status awal menunggu vote komunitas
-        })
+        body: formData
       });
 
       const data = await response.json();
@@ -335,14 +582,19 @@
       showError('Tidak dapat terhubung ke server. Pastikan server berjalan.');
       setLoading(false);
     }
-}
+  }
 
+  // =========================================
+  // 6. Logout
+  // =========================================
   function logout() {
     localStorage.clear();
     window.location.href = '../login.html';
   }
 
-  // Cek login
+  // =========================================
+  // 7. Cek login
+  // =========================================
   window.addEventListener('load', () => {
     const token = localStorage.getItem('token');
     if (!token) {
