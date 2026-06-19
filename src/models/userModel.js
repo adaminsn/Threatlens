@@ -1,9 +1,9 @@
 const db = require('../config/database');
 
 const UserModel = {
-  // =============================================
+ 
   // CREATE
-  // =============================================
+ 
   
   create: async (username, email, hashedPassword) => {
     const [result] = await db.query(
@@ -13,9 +13,9 @@ const UserModel = {
     return result.insertId;
   },
 
-  // =============================================
+ 
   // READ
-  // =============================================
+ 
   
   findByEmail: async (email) => {
     const [rows] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
@@ -55,9 +55,9 @@ const UserModel = {
     return rows;
   },
 
-  // =============================================
+ 
   // UPDATE
-  // =============================================
+ 
   
   updateProfile: async (userId, username, email, bio) => {
     await db.query(
@@ -103,9 +103,9 @@ const UserModel = {
     await db.query('UPDATE users SET last_activity = NOW() WHERE id = ?', [userId]);
   },
 
-  // =============================================
+ 
   // DELETE
-  // =============================================
+ 
   
   deleteById: async (userId) => {
     await db.query('DELETE FROM votes WHERE user_id = ?', [userId]);
@@ -115,9 +115,9 @@ const UserModel = {
     await db.query('DELETE FROM users WHERE id = ?', [userId]);
   },
 
-  // =============================================
+ 
   // STATISTICS
-  // =============================================
+ 
   
   getTotalCount: async () => {
     const [rows] = await db.query("SELECT COUNT(*) as total FROM users WHERE role = 'user'");
@@ -138,9 +138,9 @@ const UserModel = {
     return rows[0].total;
   },
 
-  // =============================================
+ 
   // 🔥 BARU: UTILITY
-  // =============================================
+ 
   
   // Cek apakah email sudah digunakan (untuk validasi)
   isEmailExists: async (email, excludeUserId = null) => {

@@ -3,10 +3,8 @@ const router = express.Router();
 const threatController = require('../controllers/threatController');
 const { verifyToken } = require('../middlewares/auth');
 
-// =====================================================
+ 
 // ROUTES
-// =====================================================
-
 // Public routes (bisa diakses tanpa login)
 router.get('/', threatController.getAllThreats);
 router.get('/:id', threatController.getThreatById);

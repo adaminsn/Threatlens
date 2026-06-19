@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 13 Jun 2026 pada 08.06
+-- Waktu pembuatan: 18 Jun 2026 pada 02.38
 -- Versi server: 8.4.3
 -- Versi PHP: 8.3.16
 
@@ -59,6 +59,27 @@ INSERT INTO `comments` (`id`, `user_id`, `threat_id`, `content`, `created_at`) V
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` int NOT NULL DEFAULT '1',
+  `site_name` varchar(255) DEFAULT 'ThreatLens',
+  `maintenance_mode` tinyint DEFAULT '0',
+  `report_cooldown` int DEFAULT '60',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data untuk tabel `settings`
+--
+
+INSERT INTO `settings` (`id`, `site_name`, `maintenance_mode`, `report_cooldown`, `updated_at`) VALUES
+(1, 'ThreatLens', 0, 60, '2026-06-13 10:31:01');
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `threats`
 --
 
@@ -93,7 +114,8 @@ INSERT INTO `threats` (`id`, `user_id`, `title`, `indicator`, `type`, `category`
 (10, 3, 'Spam Campaign', 'winner@lottery-intl.com', 'domain', 'spam', 'Fake lottery spam campaign', 'suspicious', 0, NULL, '2026-05-21 12:16:16', 0, NULL, 0, 0, NULL),
 (11, 2, 'URL Aneh', 'https://www.roblox.com/home', 'url', 'other', 'Ketika membuka website tersebut, muncul notif atau pop up tidak boleh membuka karena terdapat virus', 'pending', 1, NULL, '2026-05-23 01:23:47', 3, '[1,1,3]', 0, 0, NULL),
 (13, 2, 'AI Agent', 'https://www.kimi.com/chat/19e52d9a-7ce2-8cb5-8000-09d6f7bc28f5?chat_enter_method=home', 'url', 'other', 'Aku tidak tau kenapa, tetapi saat saya buka web tersebut menjadi leg sekali dan muncul notif berbahaya', 'safe', 1, '{\"scanned\": true, \"checked_at\": \"2026-05-23T07:21:19.250Z\", \"risk_score\": 0, \"total_engines\": 0, \"malicious_count\": 0, \"suspicious_count\": 0, \"recommended_level\": \"safe\"}', '2026-05-23 07:21:19', 0, NULL, 0, 0, NULL),
-(24, 2, 'asdfasd', 'https://www.virustotal.com/gui/my-apikey', 'url', 'malware', 'fasdfasd asdfasdf asdfasdf asdfasdfa asdfasdf asdfasdf', 'dangerous', 1, '{\"scanned\": true, \"checked_at\": \"2026-05-23T11:19:59.105Z\", \"risk_score\": 0, \"total_engines\": 0, \"malicious_count\": 0, \"suspicious_count\": 0, \"recommended_level\": \"safe\"}', '2026-05-23 11:19:59', 5, '[4,5,6,7,8]', 0, 0, NULL);
+(24, 2, 'asdfasd', 'https://www.virustotal.com/gui/my-apikey', 'url', 'malware', 'fasdfasd asdfasdf asdfasdf asdfasdfa asdfasdf asdfasdf', 'dangerous', 1, '{\"scanned\": true, \"checked_at\": \"2026-05-23T11:19:59.105Z\", \"risk_score\": 0, \"total_engines\": 0, \"malicious_count\": 0, \"suspicious_count\": 0, \"recommended_level\": \"safe\"}', '2026-05-23 11:19:59', 5, '[4,5,6,7,8]', 0, 0, NULL),
+(28, 19, 'anu', 'https://www.youtube.com/watch?v=M3S2KB6RwwA', 'url', 'malware', 'asdfasdfasdfa sdafsdfasdfa sdaf asdfas dfas dfasd f1234aws dfasd fas', 'safe', 0, '{\"scanned\": true, \"checked_at\": \"2026-06-13T10:02:24.987Z\", \"risk_score\": 0, \"total_engines\": 0, \"malicious_count\": 0, \"suspicious_count\": 0, \"recommended_level\": \"safe\"}', '2026-06-13 10:02:24', 0, NULL, 0, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -148,32 +170,35 @@ CREATE TABLE `users` (
   `avatar` varchar(500) DEFAULT NULL,
   `bio` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_activity` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `last_activity` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `email_verified` tinyint DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data untuk tabel `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `reputation`, `level`, `total_points`, `xp`, `avatar`, `bio`, `created_at`, `last_activity`) VALUES
-(1, 'admin', 'admin@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 9999, 100, 0, 0, NULL, 'Founder & CEO of ThreatLens. Cybersecurity expert with 15+ years experience.', '2026-05-23 03:07:07', '2026-06-05 03:06:50'),
-(2, 'testuser', 'test@gmail.com', '$2b$10$JHfEV28yirJubrXgxcBd8eFs0QnumD/iucrwr9J1xjOhZACxF1Zoy', 'user', 353, 4, 0, 0, NULL, 'Security enthusiast learning about threat hunting and malware analysis.', '2026-04-23 22:52:17', '2026-06-05 06:50:33'),
-(3, 'adaminsn_', 'adaminsaan24@gmail.com', '$2b$10$NMe7vMih8.i9yA6S4D9nDO1FAVIE88hok2mAWXmpMGCqBcYz/2OlO', 'admin', 7010, 71, 0, 0, '/uploads/avatars/user-3-1779361776159-464816607.jpeg', 'this is nine one one, what is your emergency?.', '2026-05-21 03:31:54', '2026-06-05 03:08:45'),
-(4, 'CyberVanguard', 'cyber@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8520, 86, 0, 0, NULL, '🏆 Elite Threat Hunter | 5+ years experience', '2026-05-23 03:49:05', '2026-05-23 11:20:21'),
-(5, 'NetShield', 'netshield@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 7820, 79, 0, 0, NULL, '🛡️ Network Security Expert', '2026-05-23 03:49:05', '2026-05-23 11:20:50'),
-(6, 'DarkTrace', 'darktrace@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 7220, 73, 0, 0, NULL, '🔍 Advanced Threat Detection', '2026-05-23 03:49:05', '2026-05-23 11:21:11'),
-(7, 'MalwareKiller', 'malwarekiller@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6820, 69, 0, 0, NULL, '🦠 Malware Analyst', '2026-05-23 03:49:05', '2026-05-23 11:21:31'),
-(8, 'PhishFinder', 'phishfinder@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6586, 66, 0, 0, NULL, '🎣 Phishing Specialist', '2026-05-23 03:49:05', '2026-05-23 11:40:26'),
-(9, 'DDoSDefender', 'ddosdefender@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6000, 60, 0, 0, NULL, '⚔️ DDoS Mitigation Expert', '2026-05-23 03:49:05', '2026-05-23 03:49:05'),
-(10, 'ZeroDayHunter', 'zeroday@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 5500, 55, 0, 0, NULL, '💀 Zero Day Vulnerability Hunter', '2026-05-23 03:49:05', '2026-05-23 03:58:08'),
-(11, 'RansomStop', 'ransomstop@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 5200, 52, 0, 0, NULL, '🔒 Ransomware Fighter', '2026-05-23 03:49:05', '2026-05-23 03:51:10'),
-(12, 'SecurityRookie', 'rookie@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 4500, 45, 0, 0, NULL, '🔰 Security Enthusiast', '2026-05-23 03:49:05', '2026-05-23 03:49:05'),
-(13, 'BugHunter', 'bug@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 3800, 38, 0, 0, NULL, '🐛 Bug Bounty Hunter', '2026-05-23 03:49:05', '2026-05-23 03:49:05'),
-(14, 'PacketSniffer', 'packet@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 3000, 30, 0, 0, NULL, '📡 Network Analyst', '2026-05-23 03:49:05', '2026-05-23 03:49:05'),
-(15, 'FirewallGuard', 'firewall@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 2500, 25, 0, 0, NULL, '🔥 Firewall Administrator', '2026-05-23 03:49:05', '2026-05-23 03:49:05'),
-(16, 'LogWatcher', 'logwatcher@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1800, 18, 0, 0, NULL, '📋 Log Monitoring', '2026-05-23 03:49:05', '2026-05-23 03:49:05'),
-(17, 'NewHunter', 'newhunter@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1000, 10, 0, 0, NULL, '🌱 Beginner Threat Hunter', '2026-05-23 03:49:05', '2026-05-23 03:49:05'),
-(18, 'JustJoined', 'justjoined@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 500, 5, 0, 0, NULL, '✨ New Member', '2026-05-23 03:49:06', '2026-05-23 03:49:06');
+INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `reputation`, `level`, `total_points`, `xp`, `avatar`, `bio`, `created_at`, `last_activity`, `email_verified`) VALUES
+(1, 'admin', 'admin@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 9999, 100, 0, 0, NULL, 'Founder & CEO of ThreatLens. Cybersecurity expert with 15+ years experience.', '2026-05-23 03:07:07', '2026-06-13 10:58:57', 1),
+(2, 'testuser', 'test@gmail.com', '$2b$10$JHfEV28yirJubrXgxcBd8eFs0QnumD/iucrwr9J1xjOhZACxF1Zoy', 'user', 353, 4, 0, 0, NULL, 'Security enthusiast learning about threat hunting and malware analysis.', '2026-04-23 22:52:17', '2026-06-13 09:57:06', 0),
+(3, 'adaminsn_', 'adaminsaan24@gmail.com', '$2b$10$NMe7vMih8.i9yA6S4D9nDO1FAVIE88hok2mAWXmpMGCqBcYz/2OlO', 'user', 7010, 71, 0, 0, '/uploads/avatars/user-3-1781348777980-774204498.jpeg', 'this is nine one one, what is your emergency?.', '2026-05-21 03:31:54', '2026-06-16 09:46:06', 1),
+(4, 'CyberVanguard', 'cyber@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8520, 86, 0, 0, NULL, '🏆 Elite Threat Hunter | 5+ years experience', '2026-05-23 03:49:05', '2026-05-23 11:20:21', 0),
+(5, 'NetShield', 'netshield@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 7820, 79, 0, 0, NULL, '🛡️ Network Security Expert', '2026-05-23 03:49:05', '2026-05-23 11:20:50', 0),
+(6, 'DarkTrace', 'darktrace@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 7220, 73, 0, 0, NULL, '🔍 Advanced Threat Detection', '2026-05-23 03:49:05', '2026-05-23 11:21:11', 0),
+(7, 'MalwareKiller', 'malwarekiller@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6820, 69, 0, 0, NULL, '🦠 Malware Analyst', '2026-05-23 03:49:05', '2026-05-23 11:21:31', 0),
+(8, 'PhishFinder', 'phishfinder@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6586, 66, 0, 0, NULL, '🎣 Phishing Specialist', '2026-05-23 03:49:05', '2026-05-23 11:40:26', 0),
+(9, 'DDoSDefender', 'ddosdefender@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6000, 60, 0, 0, NULL, '⚔️ DDoS Mitigation Expert', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
+(10, 'ZeroDayHunter', 'zeroday@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 5500, 55, 0, 0, NULL, '💀 Zero Day Vulnerability Hunter', '2026-05-23 03:49:05', '2026-05-23 03:58:08', 0),
+(11, 'RansomStop', 'ransomstop@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 5200, 52, 0, 0, NULL, '🔒 Ransomware Fighter', '2026-05-23 03:49:05', '2026-05-23 03:51:10', 0),
+(12, 'SecurityRookie', 'rookie@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 4500, 45, 0, 0, NULL, '🔰 Security Enthusiast', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
+(13, 'BugHunter', 'bug@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 3800, 38, 0, 0, NULL, '🐛 Bug Bounty Hunter', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
+(14, 'PacketSniffer', 'packet@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 3000, 30, 0, 0, NULL, '📡 Network Analyst', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
+(15, 'FirewallGuard', 'firewall@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 2500, 25, 0, 0, NULL, '🔥 Firewall Administrator', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
+(16, 'LogWatcher', 'logwatcher@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1800, 18, 0, 0, NULL, '📋 Log Monitoring', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
+(17, 'NewHunter', 'newhunter@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1000, 10, 0, 0, NULL, '🌱 Beginner Threat Hunter', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
+(18, 'JustJoined', 'justjoined@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 500, 5, 0, 0, NULL, '✨ New Member', '2026-05-23 03:49:06', '2026-05-23 03:49:06', 0),
+(19, 'lioraa', 'liora@gmail.com', '$2b$10$egJPyfBTdeYtIJu.1abR9uFwaghDV7zG/lo0JilArG94DsPPMw1AW', 'user', 10, 1, 0, 0, NULL, NULL, '2026-06-13 10:00:33', '2026-06-13 10:31:57', 1),
+(25, 'LeoxLewa', 'leomessixlewa@gmail.com', '$2b$10$EKyjq8ZOkvbmN1UClkRa4OWD0WCHfdQKUrzz.qazqtRCQzzN.c7Uu', 'user', 0, 1, 0, 0, NULL, NULL, '2026-06-13 11:39:36', '2026-06-13 11:40:25', 1);
 
 -- --------------------------------------------------------
 
@@ -246,6 +271,12 @@ ALTER TABLE `comments`
   ADD KEY `threat_id` (`threat_id`);
 
 --
+-- Indeks untuk tabel `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indeks untuk tabel `threats`
 --
 ALTER TABLE `threats`
@@ -303,7 +334,7 @@ ALTER TABLE `comments`
 -- AUTO_INCREMENT untuk tabel `threats`
 --
 ALTER TABLE `threats`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT untuk tabel `threat_verifications`
@@ -315,7 +346,7 @@ ALTER TABLE `threat_verifications`
 -- AUTO_INCREMENT untuk tabel `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT untuk tabel `user_achievements`

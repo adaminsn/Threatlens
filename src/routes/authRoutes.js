@@ -6,9 +6,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// =====================================================
+ 
 // KONFIGURASI UPLOAD AVATAR
-// =====================================================
+ 
 const uploadDir = './uploads/avatars';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
@@ -39,10 +39,9 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// =====================================================
+ 
 // ROUTES
-// =====================================================
-
+ 
 // Public routes
 router.post('/register', authController.register);
 router.post('/login', authController.login);

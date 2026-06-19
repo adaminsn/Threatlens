@@ -3,10 +3,8 @@ const UserModel = require('../models/userModel');
 const ThreatModel = require('../models/threatModel');
 
 const adminController = {
-  // =============================================
+ 
   // DASHBOARD STATISTICS
-  // =============================================
-  
   getStats: async (req, res) => {
     try {
       const [totalUsers] = await db.query("SELECT COUNT(*) as total FROM users WHERE role = 'user'");
@@ -40,10 +38,8 @@ const adminController = {
     }
   },
 
-  // =============================================
+ 
   // USER MANAGEMENT
-  // =============================================
-  
   getAllUsers: async (req, res) => {
     try {
       const [rows] = await db.query(`
@@ -109,10 +105,8 @@ const adminController = {
     }
   },
 
-  // =============================================
+ 
   // REPORT MANAGEMENT
-  // =============================================
-  
   getAllReports: async (req, res) => {
     try {
       const [rows] = await db.query(`
@@ -154,10 +148,8 @@ const adminController = {
     }
   },
 
-  // =============================================
+ 
   // ADMIN VERIFICATION (LANGSUNG HIGH RISK)
-  // =============================================
-  
   verifyReport: async (req, res) => {
     try {
       const reportId = req.params.id;
@@ -208,10 +200,8 @@ const adminController = {
     }
   },
 
-  // =============================================
+ 
   // VERIFICATION HISTORY
-  // =============================================
-  
   getVerificationHistory: async (req, res) => {
     try {
       const [rows] = await db.query(`

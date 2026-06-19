@@ -12,18 +12,12 @@ require('dotenv').config();
 // Import email service
 const { sendVerificationEmail } = require('../src/services/emailService');
 
-// =====================================================
 // KONFIGURASI MULTER (Upload Foto Profil)
-// =====================================================
-
-// Tentukan folder penyimpanan
 const uploadDir = path.join(__dirname, '../uploads/avatars');
-// Buat folder jika belum ada
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Konfigurasi storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, uploadDir);
@@ -35,7 +29,6 @@ const storage = multer.diskStorage({
   }
 });
 
-// Filter tipe file (hanya gambar)
 const fileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
@@ -46,18 +39,15 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 2 * 1024 * 1024 }, // Maks 2MB
+  limits: { fileSize: 2 * 1024 * 1024 },
   fileFilter: fileFilter
 });
 
-// =====================================================
 // REGISTER - Dengan Verifikasi Email
-// =====================================================
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    // Validasi input
     if (!username || !email || !password) {
       return res.status(400).json({ message: 'Semua field harus diisi.' });
     }
@@ -75,7 +65,6 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Format email tidak valid.' });
     }
 
-    // Cek user existing
     const [existingUser] = await db.query(
       'SELECT * FROM users WHERE email = ? OR username = ?',
       [email, username]
@@ -87,13 +76,11 @@ router.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // INSERT dengan email_verified = 0
     const [result] = await db.query(
       'INSERT INTO users (username, email, password, email_verified, created_at, reputation, level) VALUES (?, ?, ?, 0, NOW(), 0, 1)',
       [username, email, hashedPassword]
     );
 
-    // Kirim email verifikasi
     await sendVerificationEmail(email, username);
 
     res.status(201).json({ 
@@ -106,9 +93,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// =====================================================
-// LOGIN - Dengan Pengecekan Verifikasi Email
-// =====================================================
+// LOGIN - Dengan Pengecekan Verifikasi Email + Login Notification
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -118,7 +103,7 @@ router.post('/login', async (req, res) => {
     }
 
     const [users] = await db.query(
-      'SELECT id, username, email, password, role, reputation, level, avatar, bio, email_verified, created_at FROM users WHERE email = ?',
+      'SELECT id, username, email, password, role, reputation, level, avatar, bio, email_verified, created_at, last_activity, last_activity_device FROM users WHERE email = ?',
       [email]
     );
 
@@ -133,7 +118,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Email atau password salah.' });
     }
 
-    // Cek apakah email sudah diverifikasi
     if (user.email_verified === 0) {
       return res.status(403).json({ 
         message: 'Email belum diverifikasi. Silakan cek inbox Anda untuk link verifikasi.',
@@ -142,8 +126,29 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Update last_activity
-    await db.query('UPDATE users SET last_activity = NOW() WHERE id = ?', [user.id]);
+    // CEK PERANGKAT - Apakah login dari perangkat baru?
+    const userAgent = req.headers['user-agent'] || 'Unknown Device';
+    const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
+    const lastDevice = user.last_activity_device || null;
+    const isNewDevice = lastDevice !== userAgent;
+
+    // Update last_activity dan device
+    await db.query(
+      'UPDATE users SET last_activity = NOW(), last_activity_device = ? WHERE id = ?',
+      [userAgent, user.id]
+    );
+
+    // KIRIM NOTIFIKASI jika login dari perangkat baru
+    if (isNewDevice) {
+      const { sendLoginNotificationEmail } = require('../src/services/emailService');
+      sendLoginNotificationEmail(
+        user.email, 
+        user.username, 
+        ipAddress, 
+        userAgent,
+        'Unknown'
+      ).catch(err => console.error('Failed to send login notification:', err));
+    }
 
     const token = jwt.sign(
       { 
@@ -161,7 +166,8 @@ router.post('/login', async (req, res) => {
       id: user.id, 
       username: user.username, 
       role: user.role,
-      level: user.level
+      level: user.level,
+      isNewDevice: isNewDevice
     });
 
     res.json({
@@ -187,9 +193,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// =====================================================
 // VERIFIKASI EMAIL
-// =====================================================
 router.get('/verify-email', async (req, res) => {
   try {
     const { token } = req.query;
@@ -230,9 +234,7 @@ router.get('/verify-email', async (req, res) => {
   }
 });
 
-// =====================================================
 // RESEND VERIFICATION EMAIL
-// =====================================================
 router.post('/resend-verification', async (req, res) => {
   try {
     const { email } = req.body;
@@ -263,9 +265,7 @@ router.post('/resend-verification', async (req, res) => {
   }
 });
 
-// =====================================================
 // GET /api/auth/me — data profil user yang login
-// =====================================================
 router.get('/me', verifyToken, async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -282,9 +282,7 @@ router.get('/me', verifyToken, async (req, res) => {
   }
 });
 
-// =====================================================
 // PUT /api/auth/update-profile — update username, email, bio
-// =====================================================
 router.put('/update-profile', verifyToken, async (req, res) => {
   try {
     const { username, email, bio } = req.body;
@@ -335,9 +333,7 @@ router.put('/update-profile', verifyToken, async (req, res) => {
   }
 });
 
-// =====================================================
 // PUT /api/auth/change-password — ganti password
-// =====================================================
 router.put('/change-password', verifyToken, async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -371,9 +367,7 @@ router.put('/change-password', verifyToken, async (req, res) => {
   }
 });
 
-// =====================================================
 // POST /api/auth/upload-avatar — upload foto profil
-// =====================================================
 router.post('/upload-avatar', verifyToken, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
@@ -409,9 +403,7 @@ router.post('/upload-avatar', verifyToken, upload.single('avatar'), async (req, 
   }
 });
 
-// =====================================================
 // GET /api/auth/top-hunters — Top berdasarkan reputasi
-// =====================================================
 router.get('/top-hunters', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -447,9 +439,7 @@ router.get('/top-hunters', async (req, res) => {
   }
 });
 
-// =====================================================
 // GET /api/auth/top-contributors — Top berdasarkan laporan
-// =====================================================
 router.get('/top-contributors', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10;
@@ -490,9 +480,7 @@ router.get('/top-contributors', async (req, res) => {
   }
 });
 
-// =====================================================
 // GET /api/auth/online-users — User sedang online
-// =====================================================
 router.get('/online-users', async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -511,9 +499,7 @@ router.get('/online-users', async (req, res) => {
   }
 });
 
-// =====================================================
 // POST /api/auth/update-activity — Update last_activity
-// =====================================================
 router.post('/update-activity', verifyToken, async (req, res) => {
   try {
     await db.query('UPDATE users SET last_activity = NOW() WHERE id = ?', [req.user.id]);
@@ -524,9 +510,7 @@ router.post('/update-activity', verifyToken, async (req, res) => {
   }
 });
 
-// =====================================================
 // GET /api/auth/achievements — Achievement user
-// =====================================================
 router.get('/achievements', verifyToken, async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -558,9 +542,7 @@ router.get('/achievements', verifyToken, async (req, res) => {
   }
 });
 
-// =====================================================
 // GET /api/auth/user/:id — Data user by ID (PUBLIC)
-// =====================================================
 router.get('/user/:id', async (req, res) => {
   try {
     const [rows] = await db.query(
@@ -575,6 +557,132 @@ router.get('/user/:id', async (req, res) => {
     console.error('Error in /user/:id:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// FORGOT PASSWORD - Kirim link reset ke email
+router.post('/forgot_password', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: 'Email wajib diisi.' });
+        }
+
+        const [users] = await db.query(
+            'SELECT id, username, email_verified FROM users WHERE email = ?',
+            [email]
+        );
+
+        if (users.length === 0) {
+            return res.status(200).json({ 
+                message: 'Jika email terdaftar, link reset password akan dikirim.' 
+            });
+        }
+
+        const user = users[0];
+
+        if (user.email_verified === 0) {
+            return res.status(400).json({ 
+                message: 'Email belum diverifikasi. Silakan verifikasi email terlebih dahulu.' 
+            });
+        }
+
+        const crypto = require('crypto');
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + 3600000);
+
+        await db.query(
+            `INSERT INTO password_resets (email, token, expires_at) 
+             VALUES (?, ?, ?) 
+             ON DUPLICATE KEY UPDATE 
+             token = VALUES(token), 
+             expires_at = VALUES(expires_at)`,
+            [email, resetToken, expiresAt]
+        );
+
+        const { sendResetPasswordEmail } = require('../src/services/emailService');
+        await sendResetPasswordEmail(email, user.username, resetToken);
+
+        res.status(200).json({ 
+            message: 'Jika email terdaftar, link reset password akan dikirim.' 
+        });
+
+    } catch (err) {
+        console.error('❌ Forgot password error:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server.' });
+    }
+});
+
+// RESET PASSWORD - Proses reset password
+router.post('/reset_password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({ message: 'Token dan password baru wajib diisi.' });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({ message: 'Password minimal 6 karakter.' });
+        }
+
+        const [rows] = await db.query(
+            'SELECT email FROM password_resets WHERE token = ? AND expires_at > NOW()',
+            [token]
+        );
+
+        if (rows.length === 0) {
+            return res.status(400).json({ 
+                message: 'Token tidak valid atau sudah kadaluarsa. Silakan minta ulang.' 
+            });
+        }
+
+        const email = rows[0].email;
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await db.query(
+            'UPDATE users SET password = ? WHERE email = ?',
+            [hashedPassword, email]
+        );
+
+        await db.query('DELETE FROM password_resets WHERE token = ?', [token]);
+
+        console.log(`✅ Password reset successful for: ${email}`);
+
+        res.json({ 
+            success: true,
+            message: 'Password berhasil direset! Silakan login dengan password baru.' 
+        });
+
+    } catch (err) {
+        console.error('❌ Reset password error:', err);
+        res.status(500).json({ message: 'Terjadi kesalahan server.' });
+    }
+});
+
+// VALIDATE RESET TOKEN - Cek apakah token valid
+router.get('/validate-reset-token', async (req, res) => {
+    try {
+        const { token } = req.query;
+
+        if (!token) {
+            return res.status(400).json({ valid: false, message: 'Token tidak ditemukan.' });
+        }
+
+        const [rows] = await db.query(
+            'SELECT email FROM password_resets WHERE token = ? AND expires_at > NOW()',
+            [token]
+        );
+
+        if (rows.length === 0) {
+            return res.json({ valid: false, message: 'Token tidak valid atau sudah kadaluarsa.' });
+        }
+
+        res.json({ valid: true, email: rows[0].email });
+    } catch (err) {
+        console.error('❌ Validate token error:', err);
+        res.status(500).json({ valid: false, message: 'Terjadi kesalahan server.' });
+    }
 });
 
 module.exports = router;

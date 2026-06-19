@@ -1,11 +1,845 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" id="html-root">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ThreatLens — See Through Every Threat</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
+
+  <!-- DARK/LIGHT MODE CSS VARIABLES - DIPERBAIKI -->
+  <style>
+    /* ============================================
+       CSS VARIABLES - DARK MODE (Default)
+       ============================================ */
+    :root {
+      /* Background layers */
+      --bg-primary: #080b10;
+      --bg-secondary: #111820;
+      --bg-card: #111820;
+      --bg-input: #0d1218;
+      --bg-elevated: #1a2332;
+
+      /* Border & dividers */
+      --border-color: #1a2332;
+      --border-hover: #2a3a50;
+
+      /* Text colors */
+      --text-primary: #e8eaf0;
+      --text-secondary: #a0a8b8;
+      --text-muted: #5a6070;
+      --text-dim: #8a90a0;
+
+      /* Accent colors */
+      --red: #ff2d2d;
+      --red-dim: rgba(255, 45, 45, 0.2);
+      --red-soft: #ff6b6b;
+      --cyan: #00e5ff;
+      --cyan-soft: #7eefff;
+      --orange: #ff7c2d;
+      --orange-soft: #ffb380;
+      --green: #00ff9c;
+      --green-soft: #7fffd4;
+      --yellow: #ffc107;
+      --yellow-soft: #ffe082;
+
+      /* Status colors */
+      --danger-bg: rgba(255, 45, 45, 0.12);
+      --warn-bg: rgba(255, 124, 45, 0.12);
+      --safe-bg: rgba(0, 255, 156, 0.12);
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+      --shadow-glow-red: 0 0 20px rgba(255, 45, 45, 0.15);
+
+      /* Font families */
+      --font-body: 'Syne', sans-serif;
+      --font-mono: 'Share Tech Mono', monospace;
+
+      /* Transitions */
+      --transition-fast: 0.2s ease;
+      --transition-base: 0.3s ease;
+    }
+
+    /* ============================================
+       LIGHT MODE OVERRIDES
+       ============================================ */
+    html.light {
+      /* Background layers - inverted hierarchy */
+      --bg-primary: #f0f2f5;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-input: #eef1f5;
+      --bg-elevated: #f8f9fa;
+
+      /* Border & dividers */
+      --border-color: #d1d5db;
+      --border-hover: #9ca3af;
+
+      /* Text colors */
+      --text-primary: #1a1a2e;
+      --text-secondary: #374151;
+      --text-muted: #6b7280;
+      --text-dim: #9ca3af;
+
+      /* Accent colors - adjusted for light backgrounds */
+      --red: #dc2626;
+      --red-dim: rgba(220, 38, 38, 0.12);
+      --red-soft: #ef4444;
+      --cyan: #0891b2;
+      --cyan-soft: #22d3ee;
+      --orange: #ea580c;
+      --orange-soft: #fb923c;
+      --green: #059669;
+      --green-soft: #34d399;
+      --yellow: #d97706;
+      --yellow-soft: #fbbf24;
+
+      /* Status colors */
+      --danger-bg: rgba(220, 38, 38, 0.08);
+      --warn-bg: rgba(234, 88, 12, 0.08);
+      --safe-bg: rgba(5, 150, 105, 0.08);
+
+      /* Shadows - stronger for light mode visibility */
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+      --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.1);
+    }
+
+    /* ============================================
+       GLOBAL STYLES
+       ============================================ */
+    * {
+      transition: background-color var(--transition-base),
+                  border-color var(--transition-base),
+                  color var(--transition-fast);
+    }
+
+    /* Respect prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ============================================
+       NAVBAR
+       ============================================ */
+    nav {
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-logo {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.25rem;
+    }
+
+    .nav-logo span {
+      color: var(--red);
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      gap: 1.5rem;
+      align-items: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color var(--transition-fast);
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-cta {
+      background-color: var(--red);
+      color: #ffffff !important;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    html.light .nav-cta {
+      color: #ffffff !important;
+    }
+
+    /* ============================================
+       THEME TOGGLE BUTTON
+       ============================================ */
+    .theme-toggle {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      transition: all var(--transition-base);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--red);
+      transform: scale(1.05);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .theme-toggle:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    /* ============================================
+       HERO SECTION
+       ============================================ */
+    .hero {
+      position: relative;
+      padding: 4rem 2rem;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background-color: var(--danger-bg);
+      color: var(--red);
+      border: 1px solid var(--red-dim);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+
+    html.light .hero-badge {
+      background-color: var(--danger-bg);
+      color: var(--red);
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .hero h1 .accent {
+      color: var(--red);
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 3rem;
+    }
+
+    .btn-primary {
+      background-color: var(--red);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 0.875rem 1.75rem;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all var(--transition-fast);
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--red-soft);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow-red);
+    }
+
+    .btn-secondary {
+      background-color: transparent;
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.875rem 1.75rem;
+      border-radius: 8px;
+      font-weight: 600;
+      border: 1px solid var(--border-color);
+      transition: all var(--transition-fast);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-muted);
+      color: var(--text-primary);
+      background-color: var(--bg-elevated);
+    }
+
+    /* ============================================
+       HERO TERMINAL
+       ============================================ */
+    .hero-terminal {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 700px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-md);
+      transition: background-color var(--transition-base),
+                  border-color var(--transition-base);
+    }
+
+    .terminal-bar {
+      background-color: var(--bg-elevated);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-dot:nth-child(1) { background-color: #ff5f57; }
+    .terminal-dot:nth-child(2) { background-color: #febc2e; }
+    .terminal-dot:nth-child(3) { background-color: #28c840; }
+
+    .terminal-title {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .terminal-body {
+      padding: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+
+    .t-line {
+      margin-bottom: 0.25rem;
+      color: var(--text-primary);
+    }
+
+    .t-prompt {
+      color: var(--cyan);
+      margin-right: 0.5rem;
+    }
+
+    html.light .t-prompt {
+      color: var(--cyan);
+    }
+
+    .t-cmd {
+      color: var(--text-primary);
+    }
+
+    .t-output {
+      color: var(--text-dim);
+      padding-left: 1.25rem;
+    }
+
+    .t-warn {
+      color: var(--orange);
+      padding-left: 1.25rem;
+      font-weight: 600;
+    }
+
+    html.light .t-warn {
+      color: var(--orange);
+    }
+
+    .t-success {
+      color: var(--red);
+      padding-left: 1.25rem;
+      font-weight: 600;
+    }
+
+    html.light .t-success {
+      color: var(--red);
+    }
+
+    .t-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background-color: var(--cyan);
+      animation: blink 1s step-end infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* ============================================
+       STATS SECTION
+       ============================================ */
+    .stats {
+      background-color: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 3rem 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 4rem;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-num {
+      display: block;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    /* Stat numbers putih di light mode */
+    html.light .stat-num {
+      color: #ffffff;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ============================================
+       SECTIONS
+       ============================================ */
+    .section {
+      padding: 5rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-tag {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      line-height: 1.6;
+      margin-bottom: 3rem;
+    }
+
+    /* ============================================
+       STEPS
+       ============================================ */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .step-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 2rem;
+      transition: all var(--transition-base);
+    }
+
+    .step-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .step-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--red);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    .step-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .step-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .step-card p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    /* ============================================
+       LIVE FEED
+       ============================================ */
+    .feed-preview {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feed-header {
+      background-color: var(--bg-elevated);
+      padding: 1rem 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .feed-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--red);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .feed-item {
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .feed-item:last-child {
+      border-bottom: none;
+    }
+
+    .feed-item:hover {
+      background-color: var(--bg-elevated);
+    }
+
+    .threat-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+    }
+
+    .badge-danger {
+      background-color: var(--danger-bg);
+      color: var(--red);
+      border: 1px solid var(--red-dim);
+    }
+
+    .badge-warn {
+      background-color: var(--warn-bg);
+      color: var(--orange);
+      border: 1px solid rgba(255, 124, 45, 0.2);
+    }
+
+    html.light .badge-warn {
+      border-color: rgba(234, 88, 12, 0.2);
+    }
+
+    .badge-safe {
+      background-color: var(--safe-bg);
+      color: var(--green);
+      border: 1px solid rgba(0, 255, 156, 0.2);
+    }
+
+    html.light .badge-safe {
+      border-color: rgba(5, 150, 105, 0.2);
+    }
+
+    .feed-indicator {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      flex: 1;
+      min-width: 200px;
+      word-break: break-all;
+    }
+
+    .vote-bar {
+      width: 100px;
+      height: 6px;
+      background-color: var(--bg-input);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .vote-fill {
+      height: 100%;
+      background-color: var(--red);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .feed-votes {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* ============================================
+       FEATURES
+       ============================================ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.75rem;
+      display: flex;
+      gap: 1rem;
+      transition: all var(--transition-base);
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-icon {
+      font-size: 1.75rem;
+      flex-shrink: 0;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ============================================
+       CTA SECTION
+       ============================================ */
+    .cta-section {
+      background-color: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .cta-section h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+      line-height: 1.3;
+    }
+
+    .cta-section h2 span {
+      color: var(--red);
+    }
+
+    .cta-section p {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 1.05rem;
+    }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    footer {
+      background-color: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+
+    .footer-logo span {
+      color: var(--red);
+    }
+
+    .footer-text {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stats {
+        gap: 2rem;
+      }
+
+      .nav-links {
+        gap: 1rem;
+      }
+
+      .feed-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .vote-bar {
+        width: 100%;
+      }
+    }
+
+    /* ============================================
+       SYSTEM PREFERENCE SUPPORT
+       ============================================ */
+    @media (prefers-color-scheme: light) {
+      html:not(.dark):not(.light) {
+        --bg-primary: #f0f2f5;
+        --bg-secondary: #ffffff;
+        --bg-card: #ffffff;
+        --bg-input: #eef1f5;
+        --bg-elevated: #f8f9fa;
+        --border-color: #d1d5db;
+        --border-hover: #9ca3af;
+        --text-primary: #1a1a2e;
+        --text-secondary: #374151;
+        --text-muted: #6b7280;
+        --text-dim: #9ca3af;
+        --red: #dc2626;
+        --red-dim: rgba(220, 38, 38, 0.12);
+        --red-soft: #ef4444;
+        --cyan: #0891b2;
+        --cyan-soft: #22d3ee;
+        --orange: #ea580c;
+        --orange-soft: #fb923c;
+        --green: #059669;
+        --green-soft: #34d399;
+        --yellow: #d97706;
+        --yellow-soft: #fbbf24;
+        --danger-bg: rgba(220, 38, 38, 0.08);
+        --warn-bg: rgba(234, 88, 12, 0.08);
+        --safe-bg: rgba(5, 150, 105, 0.08);
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+        --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+        --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.1);
+      }
+    }
+  </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -18,13 +852,17 @@
       <li><a href="#feed">Feed Ancaman</a></li>
       <li><a href="pages/login.html">Masuk</a></li>
       <li><a href="pages/register.html" class="nav-cta">Daftar Gratis</a></li>
+      <li>
+        <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle" title="Toggle Dark/Light Mode" aria-label="Toggle dark mode">
+          <span id="theme-icon">🌙</span>
+          <span id="theme-label" style="font-size:0.75rem;font-family:var(--font-mono);">Dark</span>
+        </button>
+      </li>
     </ul>
   </nav>
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-grid"></div>
-    <div class="hero-glow"></div>
     <div class="hero-content">
       <div class="hero-badge">🔴 LIVE — Feed Ancaman Real-Time Aktif</div>
       <h1>
@@ -117,7 +955,7 @@
           <div class="live-dot"></div>
           LIVE THREAT FEED
         </div>
-        <span style="font-family:var(--mono);font-size:0.72rem;color:var(--muted)">247 laporan hari ini</span>
+        <span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">247 laporan hari ini</span>
       </div>
       <div class="feed-item">
         <span class="threat-badge badge-danger">BERBAHAYA</span>
@@ -146,7 +984,7 @@
       <div class="feed-item">
         <span class="threat-badge badge-safe">AMAN</span>
         <span class="feed-indicator">github.com/nodejs/node</span>
-        <div class="vote-bar"><div class="vote-fill" style="width:5%;background:#28c840"></div></div>
+        <div class="vote-bar"><div class="vote-fill" style="width:5%;background:var(--green)"></div></div>
         <span class="feed-votes">5% • 89 vote</span>
       </div>
     </div>
@@ -191,7 +1029,7 @@
 
   <!-- CTA -->
   <div class="cta-section">
-    <h2>Bergabunglah dengan Komunitas<br/><span style="color:var(--red)">Pemburu Ancaman</span></h2>
+    <h2>Bergabunglah dengan Komunitas<br/><span>Pemburu Ancaman</span></h2>
     <p>Gratis selamanya. Daftar sekarang dan mulai berkontribusi.</p>
     <a href="pages/register.html" class="btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">Daftar Sekarang — Gratis →</a>
   </div>
@@ -201,6 +1039,99 @@
     <div class="footer-logo">⬡ Threat<span>Lens</span> — See Through Every Threat</div>
     <div class="footer-text">© 2024 ThreatLens. Dibuat untuk keamanan bersama.</div>
   </footer>
+
+  <!-- JAVASCRIPT - DIPERBAIKI -->
+  <script>
+    (function() {
+      'use strict';
+
+      const STORAGE_KEY = 'threatlens-theme';
+      const THEME_DARK = 'dark';
+      const THEME_LIGHT = 'light';
+
+      /**
+       * Deteksi preferensi sistem
+       */
+      function getSystemPreference() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? THEME_DARK : THEME_LIGHT;
+      }
+
+      /**
+       * Dapatkan tema aktif (saved > system > default)
+       */
+      function getCurrentTheme() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved === THEME_DARK || saved === THEME_LIGHT) {
+          return saved;
+        }
+        return getSystemPreference();
+      }
+
+      /**
+       * Terapkan tema ke DOM
+       */
+      function applyTheme(theme) {
+        const html = document.documentElement;
+        const icon = document.getElementById('theme-icon');
+        const label = document.getElementById('theme-label');
+
+        if (theme === THEME_LIGHT) {
+          html.classList.add('light');
+          html.classList.remove('dark');
+          if (icon) icon.textContent = '☀️';
+          if (label) label.textContent = 'Light';
+        } else {
+          html.classList.remove('light');
+          html.classList.add('dark');
+          if (icon) icon.textContent = '🌙';
+          if (label) label.textContent = 'Dark';
+        }
+      }
+
+      /**
+       * Toggle tema
+       */
+      function toggleTheme() {
+        const current = getCurrentTheme();
+        const next = current === THEME_DARK ? THEME_LIGHT : THEME_DARK;
+
+        localStorage.setItem(STORAGE_KEY, next);
+        applyTheme(next);
+
+        // Dispatch custom event untuk komponen lain yang mungkin listen
+        window.dispatchEvent(new CustomEvent('themechange', {
+          detail: { theme: next, previous: current }
+        }));
+      }
+
+      // Expose ke global scope untuk onclick handler
+      window.toggleTheme = toggleTheme;
+
+      /**
+       * Inisialisasi tema saat DOM ready
+       */
+      function initTheme() {
+        const theme = getCurrentTheme();
+        applyTheme(theme);
+      }
+
+      // Jalankan segera untuk mencegah flash of wrong theme
+      initTheme();
+
+      // Jalankan lagi saat DOM fully loaded (fallback)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTheme);
+      }
+
+      // Listen perubahan preferensi sistem
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        // Hanya update jika user belum set preferensi manual
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          applyTheme(e.matches ? THEME_DARK : THEME_LIGHT);
+        }
+      });
+    })();
+  </script>
 
 </body>
 </html>

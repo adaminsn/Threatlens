@@ -1,10 +1,8 @@
 const db = require('../config/database');
 
 const ThreatModel = {
-  // =============================================
+ 
   // CREATE
-  // =============================================
-  
   create: async (userId, title, indicator, type, category, description, status, virustotalResult) => {
     const [result] = await db.query(
       'INSERT INTO threats (user_id, title, indicator, type, category, description, status, virustotal_result) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
@@ -13,10 +11,8 @@ const ThreatModel = {
     return result.insertId;
   },
 
-  // =============================================
+ 
   // READ
-  // =============================================
-  
   findAll: async () => {
     const [rows] = await db.query(`
       SELECT 
@@ -156,9 +152,9 @@ const ThreatModel = {
     return rows;
   },
 
-  // =============================================
+ 
   // UPDATE
-  // =============================================
+ 
   
   update: async (id, title, indicator, description) => {
     await db.query(
@@ -211,9 +207,9 @@ const ThreatModel = {
     );
   },
 
-  // =============================================
+ 
   // DELETE
-  // =============================================
+ 
   
   deleteById: async (id) => {
     await db.query('DELETE FROM votes WHERE threat_id = ?', [id]);
@@ -222,9 +218,9 @@ const ThreatModel = {
     await db.query('DELETE FROM threats WHERE id = ?', [id]);
   },
 
-  // =============================================
+ 
   // STATISTICS (untuk admin dashboard)
-  // =============================================
+ 
   
   // 🔥 Count threats by status
   countByStatus: async () => {
