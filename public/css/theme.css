@@ -82,7 +82,6 @@
   --shadow-md:    var(--tl-shadow-md);
   --shadow-glow-red: var(--tl-shadow-glow);
 
-  /* Fonts */
   --font-body: 'Syne', sans-serif;
   --font-mono: 'Share Tech Mono', monospace;
   --transition-base: 0.3s ease;
@@ -90,45 +89,65 @@
 }
 
 /* ─────────────────────────────────────────────────────────
-   LIGHT MODE — aktif saat html.light
+   LIGHT MODE — Palette yang lebih kuat & kontras tinggi
 ───────────────────────────────────────────────────────── */
 html.light {
-  /* Background layers */
-  --tl-bg-rgb:           240 242 245;  /* #f0f2f5 */
-  --tl-surface-rgb:      255 255 255;  /* #ffffff */
-  --tl-surface2-rgb:     238 241 245;  /* #eef1f5 */
-  --tl-elevated-rgb:     248 249 250;  /* #f8f9fa */
+  /* Backgrounds — neutral, tidak terlalu biru */
+  --tl-bg-rgb:           238 241 247;  /* #eef1f7 – abu-abu netral */
+  --tl-surface-rgb:      255 255 255;  /* #ffffff – putih bersih untuk card */
+  --tl-surface2-rgb:     246 248 252;  /* #f6f8fc – input bg */
+  --tl-elevated-rgb:     255 255 255;  /* #ffffff */
 
-  /* Borders */
-  --tl-border-rgb:       209 213 219;  /* #d1d5db */
-  --tl-border-light-rgb: 156 163 175;  /* #9ca3af */
+  /* Borders — jauh lebih gelap agar terlihat meski dengan opacity */
+  --tl-border-rgb:       148 165 190;  /* #94a5be – visible at /30 opacity */
+  --tl-border-light-rgb: 100 118 145;  /* #647691 – dividers */
 
-  /* Text */
-  --tl-text-rgb:         26  26  46;   /* #1a1a2e */
-  --tl-text-dim-rgb:     55  65  81;   /* #374151 */
-  --tl-muted-rgb:        107 114 128;  /* #6b7280 */
+  /* Text — kontras maksimal */
+  --tl-text-rgb:         10  15  30;   /* #0a0f1e – hampir hitam */
+  --tl-text-dim-rgb:     40  55  80;   /* #283750 – secondary text */
+  --tl-muted-rgb:        80  95  118;  /* #505f76 – muted text tetap visible */
 
-  /* Brand — sedikit lebih gelap untuk kontras di bg putih */
-  --tl-red-rgb:          220 38  38;   /* #dc2626 */
-  --tl-cyan-rgb:         8   145 178;  /* #0891b2 */
-  --tl-orange-rgb:       234 88  12;   /* #ea580c */
-  --tl-green-rgb:        5   150 105;  /* #059669 */
-  --tl-yellow-rgb:       217 119 6;    /* #d97706 */
+  /* Accent — sedikit lebih gelap agar kontras di bg putih */
+  --tl-red-rgb:          210 28  28;   /* #d21c1c – merah kuat */
+  --tl-cyan-rgb:         4   128 162;  /* #0480a2 – biru-cyan solid */
+  --tl-orange-rgb:       215 78  8;    /* #d74e08 – oranye solid */
+  --tl-green-rgb:        3   122 80;   /* #037a50 – hijau solid */
+  --tl-yellow-rgb:       195 108 0;    /* #c36c00 – emas solid */
 
-  /* Shadows */
-  --tl-shadow-sm:   0 1px 3px rgba(0,0,0,0.08);
-  --tl-shadow-md:   0 4px 12px rgba(0,0,0,0.1);
-  --tl-shadow-lg:   0 8px 32px rgba(0,0,0,0.15);
-  --tl-shadow-glow: 0 0 20px rgba(220,38,38,0.1);
+  /* Shadows — lebih visible untuk memberikan depth */
+  --tl-shadow-sm:   0 1px 4px rgba(0,0,0,0.09), 0 0 0 1px rgba(148,165,190,0.20);
+  --tl-shadow-md:   0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  --tl-shadow-lg:   0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.08);
+  --tl-shadow-glow: 0 0 20px rgba(210,28,28,0.14);
 
   /* Scrollbar */
-  --tl-scroll-track: #f0f2f5;
-  --tl-scroll-thumb: #d1d5db;
-  --tl-scroll-hover: #9ca3af;
+  --tl-scroll-track: #eef1f7;
+  --tl-scroll-thumb: #b4c0d0;
+  --tl-scroll-hover: #8898b0;
 
   /* Auth aliases */
-  --red-soft: #ef4444;
-  --cyan-soft: #22d3ee;
+  --bg-primary:   rgb(var(--tl-bg-rgb));
+  --bg-secondary: rgb(var(--tl-surface-rgb));
+  --bg-card:      rgb(var(--tl-surface-rgb));
+  --bg-input:     rgb(var(--tl-surface2-rgb));
+  --bg-elevated:  rgb(var(--tl-elevated-rgb));
+  --border-color: rgb(var(--tl-border-rgb));
+  --border-hover: rgb(var(--tl-border-light-rgb));
+  --text-primary: rgb(var(--tl-text-rgb));
+  --text-secondary: rgb(var(--tl-text-dim-rgb));
+  --text-muted:   rgb(var(--tl-muted-rgb));
+  --text-dim:     rgb(var(--tl-text-dim-rgb));
+  --red:          rgb(var(--tl-red-rgb));
+  --red-dim:      rgba(210, 28, 28, 0.12);
+  --red-soft:     #ef4444;
+  --cyan:         rgb(var(--tl-cyan-rgb));
+  --cyan-soft:    #22d3ee;
+  --orange:       rgb(var(--tl-orange-rgb));
+  --green:        rgb(var(--tl-green-rgb));
+  --yellow:       rgb(var(--tl-yellow-rgb));
+  --shadow-sm:    var(--tl-shadow-sm);
+  --shadow-md:    var(--tl-shadow-md);
+  --shadow-glow-red: var(--tl-shadow-glow);
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -151,16 +170,11 @@ html.light {
     color            0.25s ease,
     box-shadow       0.3s ease;
 }
-
-/* Elemen animasi tidak ikut transisi tema */
 .no-theme-transition,
-.no-theme-transition * {
-  transition: none !important;
-}
+.no-theme-transition * { transition: none !important; }
 
 /* ─────────────────────────────────────────────────────────
    FLOATING THEME TOGGLE BUTTON
-   Diinject oleh theme.js ke semua halaman secara otomatis
 ───────────────────────────────────────────────────────── */
 #tl-theme-float {
   position: fixed;
@@ -181,43 +195,249 @@ html.light {
   box-shadow: var(--tl-shadow-md);
   transition: border-color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease !important;
 }
-
 #tl-theme-float:hover {
   border-color: var(--tl-red);
   transform: scale(1.12);
   box-shadow: var(--tl-shadow-glow), var(--tl-shadow-md);
 }
+body.has-theme-toggle #tl-theme-float { display: none; }
 
-/* Sembunyikan floating button jika halaman sudah punya toggle sendiri */
-body.has-theme-toggle #tl-theme-float {
-  display: none;
+/* ╔═══════════════════════════════════════════════════════╗
+   ║   LIGHT MODE — OVERRIDE KOMPREHENSIF                 ║
+   ║   Menangani kasus dimana Tailwind opacity modifier    ║
+   ║   (border/30, bg/80, dll.) membuat elemen invisible  ║
+   ╚═══════════════════════════════════════════════════════╝ */
+
+/* ── 1. Page background ─────────────────────────────────── */
+html.light body {
+  background-color: rgb(var(--tl-bg-rgb)) !important;
 }
 
-/* ─────────────────────────────────────────────────────────
-   LIGHT MODE — Override scanline / background noise
-   (efek dark-only yang harus dinonaktifkan di light mode)
-───────────────────────────────────────────────────────── */
-html.light .scanline-overlay { display: none; }
-html.light .hex-pattern { opacity: 0.15; }
-
-/* ─────────────────────────────────────────────────────────
-   AUTH PAGES — Light mode form fixes
-───────────────────────────────────────────────────────── */
-html.light .login-card,
-html.light .auth-card {
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06);
+/* ── 2. Sembunyikan scanline overlay, dan hapus SVG pattern dari hex-pattern ─ */
+/* .scanline-overlay = fixed overlay div → hidden safely                        */
+/* .hex-pattern = content container → jangan display:none, hapus background-nya */
+html.light .scanline-overlay {
+  display: none !important;
+}
+html.light .hex-pattern {
+  background-image: none !important;
 }
 
-html.light .input-group input::placeholder {
-  color: var(--tl-muted);
+/* ── 3. NAVBAR / HEADER — putih solid dengan shadow ───── */
+html.light header,
+html.light nav:not([class*="nav-links"]) {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  border-bottom-color: rgb(var(--tl-border-rgb)) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10) !important;
+  backdrop-filter: none !important;
 }
 
-/* ─────────────────────────────────────────────────────────
-   GRID BACKGROUND — Light mode adjust
-───────────────────────────────────────────────────────── */
+/* Override bg-tl-bg/90 di sticky header */
+html.light [class*="sticky"][class*="bg-tl-bg"],
+html.light [class*="fixed"][class*="bg-tl-bg"],
+html.light header[class*="bg-tl-bg"] {
+  background-color: rgba(255, 255, 255, 0.97) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10) !important;
+}
+
+/* ── 4. CARD / SURFACE — putih dengan shadow & border ─── */
+html.light [class*="bg-tl-surface"]:not(body):not(html) {
+  background-color: rgb(255 255 255) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06) !important;
+}
+
+/* Card hover effect */
+html.light .card-hover:hover {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.07) !important;
+  transform: translateY(-3px);
+}
+
+/* ── 5. BORDER VISIBILITY ──────────────────────────────── */
+/* Borders yang pakai /30 opacity menjadi visible di light mode */
+html.light [class*="border-tl-border"] {
+  border-color: rgb(var(--tl-border-rgb)) !important;
+}
+
+/* Override border yang di-opacity-modifikasi */
+html.light [style*="border-color: rgba"] {
+  border-color: rgb(var(--tl-border-rgb)) !important;
+}
+
+/* Sidebar nav items */
+html.light .nav-item {
+  border-left-color: transparent;
+}
+html.light .nav-item.active,
+html.light .nav-item:hover {
+  background-color: rgba(210, 28, 28, 0.08) !important;
+  color: rgb(var(--tl-red-rgb)) !important;
+}
+
+/* ── 6. INPUT FIELDS ───────────────────────────────────── */
+html.light input,
+html.light textarea,
+html.light select {
+  background-color: rgb(var(--tl-surface2-rgb)) !important;
+  border-color: rgb(var(--tl-border-rgb)) !important;
+  color: rgb(var(--tl-text-rgb)) !important;
+}
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: rgb(var(--tl-muted-rgb)) !important;
+}
+html.light input:focus,
+html.light textarea:focus {
+  border-color: rgb(var(--tl-red-rgb)) !important;
+  box-shadow: 0 0 0 3px rgba(210, 28, 28, 0.12) !important;
+}
+html.light [class*="bg-tl-bg"][class*="border-tl-border"] {
+  background-color: rgb(var(--tl-surface2-rgb)) !important;
+}
+
+/* ── 7. BADGE / TAG VISIBILITY ─────────────────────────── */
+html.light [class*="threat-high"],
+html.light [class*="threat-level-high"] {
+  background-color: rgba(210, 28, 28, 0.12) !important;
+  color: rgb(180, 20, 20) !important;
+  border-color: rgba(210, 28, 28, 0.35) !important;
+}
+html.light [class*="threat-med"],
+html.light [class*="threat-level-med"] {
+  background-color: rgba(215, 78, 8, 0.12) !important;
+  color: rgb(180, 60, 5) !important;
+  border-color: rgba(215, 78, 8, 0.35) !important;
+}
+html.light [class*="threat-low"],
+html.light [class*="threat-level-low"] {
+  background-color: rgba(4, 128, 162, 0.12) !important;
+  color: rgb(4, 100, 130) !important;
+  border-color: rgba(4, 128, 162, 0.35) !important;
+}
+
+/* Verified badge */
+html.light [class*="VERIFIED"],
+html.light span[class*="verified"],
+html.light [class*="bg-green"][class*="text-green"] {
+  background-color: rgba(3, 122, 80, 0.12) !important;
+  color: rgb(2, 95, 62) !important;
+  border-color: rgba(3, 122, 80, 0.35) !important;
+}
+
+/* ── 8. FILTER / ACTIVE BUTTONS ─────────────────────────── */
+html.light .filter-btn {
+  background-color: rgb(255, 255, 255) !important;
+  border-color: rgb(var(--tl-border-rgb)) !important;
+  color: rgb(var(--tl-text-dim-rgb)) !important;
+}
+html.light .filter-btn.active {
+  background-color: rgba(210, 28, 28, 0.12) !important;
+  color: rgb(180, 20, 20) !important;
+  border-color: rgba(210, 28, 28, 0.40) !important;
+}
+html.light .cat-btn {
+  background-color: rgb(255, 255, 255) !important;
+  border-color: rgb(var(--tl-border-rgb)) !important;
+}
+html.light .cat-btn.active {
+  background-color: rgba(4, 128, 162, 0.12) !important;
+  color: rgb(4, 100, 130) !important;
+  border-color: rgba(4, 128, 162, 0.40) !important;
+}
+html.light .type-btn.active {
+  background-color: rgba(215, 78, 8, 0.12) !important;
+  color: rgb(180, 60, 5) !important;
+  border-color: rgba(215, 78, 8, 0.40) !important;
+}
+
+/* ── 9. BUTTONS ─────────────────────────────────────────── */
+html.light button[class*="bg-tl-surface"],
+html.light a[class*="bg-tl-surface"] {
+  background-color: rgb(255, 255, 255) !important;
+  border-color: rgb(var(--tl-border-rgb)) !important;
+  color: rgb(var(--tl-text-dim-rgb)) !important;
+}
+html.light button[class*="hover:bg-tl-surface"]:hover,
+html.light a[class*="hover:bg-tl-surface"]:hover {
+  background-color: rgb(var(--tl-surface2-rgb)) !important;
+}
+
+/* Primary red buttons tetap merah */
+html.light button[class*="bg-tl-red"],
+html.light a[class*="bg-tl-red"],
+html.light [class*="bg-red-"] {
+  color: #ffffff !important;
+}
+
+/* ── 10. TEXT CONTRAST ─────────────────────────────────── */
+html.light [class*="text-tl-text"]:not([class*="text-tl-text-dim"]) {
+  color: rgb(var(--tl-text-rgb)) !important;
+}
+html.light [class*="text-tl-text-dim"],
+html.light [class*="text-tl-muted"] {
+  color: rgb(var(--tl-muted-rgb)) !important;
+}
+
+/* ── 11. GRID / PATTERN BACKGROUNDS ─────────────────────── */
 html.light .grid-bg {
   background-image:
-    linear-gradient(rgba(220,38,38,0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(220,38,38,0.06) 1px, transparent 1px);
-  opacity: 0.4;
+    linear-gradient(rgba(100, 120, 150, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 120, 150, 0.06) 1px, transparent 1px);
+  opacity: 0.5;
+}
+
+/* ── 12. STAT CARDS — border top gradient tetap visible ─── */
+html.light .stat-card {
+  background-color: rgb(255, 255, 255) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06) !important;
+}
+
+/* ── 13. TABEL ──────────────────────────────────────────── */
+html.light table th {
+  background-color: rgb(var(--tl-surface2-rgb)) !important;
+  color: rgb(var(--tl-text-rgb)) !important;
+}
+html.light table td {
+  border-color: rgba(148, 165, 190, 0.30) !important;
+  color: rgb(var(--tl-text-dim-rgb)) !important;
+}
+html.light table tr:hover td {
+  background-color: rgba(148, 165, 190, 0.08) !important;
+}
+
+/* ── 14. AUTH PAGE FIXES ─────────────────────────────────── */
+html.light .login-card,
+html.light .auth-card {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06) !important;
+}
+
+/* ── 15. SECTION DIVIDERS ───────────────────────────────── */
+html.light [class*="border-tl-border-light"],
+html.light hr,
+html.light [class*="divide-tl-border"] > * + * {
+  border-color: rgb(var(--tl-border-rgb)) !important;
+}
+
+/* ── 16. BACKDROP BLUR ELEMENTS ─────────────────────────── */
+html.light [class*="backdrop-blur"] {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+}
+
+/* ── 17. SIDEBAR ─────────────────────────────────────────── */
+html.light .sidebar,
+html.light [class*="w-64"][class*="bg-tl-surface"] {
+  background-color: rgb(255, 255, 255) !important;
+  border-color: rgb(var(--tl-border-rgb)) !important;
+  box-shadow: 2px 0 12px rgba(0,0,0,0.08) !important;
+}
+
+/* ── 18. MODAL / DROPDOWN ───────────────────────────────── */
+html.light [class*="absolute"][class*="bg-tl-surface"],
+html.light [class*="fixed"][class*="bg-tl-surface"] {
+  background-color: rgb(255, 255, 255) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.16) !important;
+}
+
+/* ── 19. PROGRESS BARS & SPARKLINES ─────────────────────── */
+html.light [class*="bg-tl-border"]:not([class*="border"]) {
+  background-color: rgba(148, 165, 190, 0.30) !important;
 }

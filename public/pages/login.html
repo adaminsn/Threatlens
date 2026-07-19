@@ -4,10 +4,48 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Masuk — ThreatLens</title>
+
+  <!-- Tema Terpusat: dark/light mode (harus pertama, sebelum Tailwind) -->
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/theme.js"></script>
+
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'tl-bg':           'rgb(var(--tl-bg-rgb) / <alpha-value>)',
+            'tl-surface':      'rgb(var(--tl-surface-rgb) / <alpha-value>)',
+            'tl-surface-2':    'rgb(var(--tl-surface2-rgb) / <alpha-value>)',
+            'tl-border':       'rgb(var(--tl-border-rgb) / <alpha-value>)',
+            'tl-border-light': 'rgb(var(--tl-border-light-rgb) / <alpha-value>)',
+            'tl-red':          'rgb(var(--tl-red-rgb) / <alpha-value>)',
+            'tl-red-dim':      'rgb(var(--tl-red-rgb) / 0.15)',
+            'tl-cyan':         'rgb(var(--tl-cyan-rgb) / <alpha-value>)',
+            'tl-cyan-dim':     'rgb(var(--tl-cyan-rgb) / 0.15)',
+            'tl-orange':       'rgb(var(--tl-orange-rgb) / <alpha-value>)',
+            'tl-orange-dim':   'rgb(var(--tl-orange-rgb) / 0.15)',
+            'tl-green':        'rgb(var(--tl-green-rgb) / <alpha-value>)',
+            'tl-green-dim':    'rgb(var(--tl-green-rgb) / 0.15)',
+            'tl-yellow':       'rgb(var(--tl-yellow-rgb) / <alpha-value>)',
+            'tl-muted':        'rgb(var(--tl-muted-rgb) / <alpha-value>)',
+            'tl-text':         'rgb(var(--tl-text-rgb) / <alpha-value>)',
+            'tl-text-dim':     'rgb(var(--tl-text-dim-rgb) / <alpha-value>)',
+          },
+          fontFamily: {
+            'syne': ['Syne', 'sans-serif'],
+            'mono': ['Share Tech Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 
-  <!-- DARK/LIGHT MODE CSS VARIABLES (sama dengan index.html) -->
+  <!-- DARK/LIGHT MODE CSS VARIABLES -->
   <style>
     /* ============================================
        CSS VARIABLES - DARK MODE (Default)
@@ -41,33 +79,8 @@
       --transition-fast: 0.2s ease;
     }
 
-    /* ============================================
-       LIGHT MODE OVERRIDES
-       ============================================ */
-    html.light {
-      --bg-primary: #f0f2f5;
-      --bg-secondary: #ffffff;
-      --bg-card: #ffffff;
-      --bg-input: #eef1f5;
-      --bg-elevated: #f8f9fa;
-      --border-color: #d1d5db;
-      --border-hover: #9ca3af;
-      --text-primary: #1a1a2e;
-      --text-secondary: #374151;
-      --text-muted: #6b7280;
-      --text-dim: #9ca3af;
-      --red: #dc2626;
-      --red-dim: rgba(220, 38, 38, 0.12);
-      --red-soft: #ef4444;
-      --cyan: #0891b2;
-      --cyan-soft: #22d3ee;
-      --orange: #ea580c;
-      --green: #059669;
-      --yellow: #d97706;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-      --shadow-glow-red: 0 0 20px rgba(220, 38, 38, 0.1);
-    }
+    /* Light mode dihandle oleh /css/theme.css */
+
 
     /* ============================================
        GLOBAL STYLES
@@ -178,6 +191,10 @@
       box-shadow: 0 0 0 3px var(--red-dim);
     }
 
+    .input-group input::placeholder {
+      color: var(--text-muted);
+    }
+
     .btn-login {
       width: 100%;
       padding: 0.85rem;
@@ -220,32 +237,10 @@
       align-items: center;
       margin-bottom: 0.5rem;
     }
-  </style>
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            'tl-bg': '#080b10',
-            'tl-surface': '#111820',
-            'tl-border': '#1a2332',
-            'tl-red': '#ff2d2d',
-            'tl-cyan': '#00e5ff',
-            'tl-muted': '#5a6070',
-            'tl-text': '#e8eaf0',
-          },
-          fontFamily: {
-            mono: ['Share Tech Mono', 'monospace'],
-            sans: ['Syne', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    /* Tailwind overrides */
+    /* ============================================
+       BACKGROUND GRID
+       ============================================ */
     .grid-bg {
       background-image:
         linear-gradient(rgba(255,45,45,0.04) 1px, transparent 1px),
@@ -269,7 +264,7 @@
     }
   </style>
 </head>
-<body>
+<body class="has-theme-toggle">
 
   <!-- Background grid (tetap) -->
   <div class="grid-bg fixed inset-0 z-0 opacity-50 pointer-events-none"></div>
@@ -280,7 +275,7 @@
     <!-- Logo -->
     <div class="text-center mb-8">
       <a href="../index.html" class="font-mono text-2xl text-[var(--red)] hover:opacity-80 transition-opacity inline-block">
-        ⬡ Threat<span class="text-white dark:text-[var(--text-primary)]">Lens</span>
+        ⬡ Threat<span class="text-[var(--text-primary)]">Lens</span>
       </a>
       <p class="text-[var(--text-muted)] text-xs font-mono mt-1">// masuk akun</p>
     </div>
@@ -337,70 +332,8 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIN + THEME -->
+  <!-- JAVASCRIPT LOGIN -->
   <script>
-    // ============================================
-    // DARK/LIGHT MODE (SAMA SEPERTI INDEX.HTML)
-    // ============================================
-    (function() {
-      'use strict';
-
-      const STORAGE_KEY = 'threatlens-theme';
-      const THEME_DARK = 'dark';
-      const THEME_LIGHT = 'light';
-
-      function getSystemPreference() {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? THEME_DARK : THEME_LIGHT;
-      }
-
-      function getCurrentTheme() {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved === THEME_DARK || saved === THEME_LIGHT) return saved;
-        return getSystemPreference();
-      }
-
-      function applyTheme(theme) {
-        const html = document.documentElement;
-        const icon = document.getElementById('theme-icon');
-        const label = document.getElementById('theme-label');
-
-        if (theme === THEME_LIGHT) {
-          html.classList.add('light');
-          html.classList.remove('dark');
-          if (icon) icon.textContent = '☀️';
-          if (label) label.textContent = 'Light';
-        } else {
-          html.classList.remove('light');
-          html.classList.add('dark');
-          if (icon) icon.textContent = '🌙';
-          if (label) label.textContent = 'Dark';
-        }
-      }
-
-      function toggleTheme() {
-        const current = getCurrentTheme();
-        const next = current === THEME_DARK ? THEME_LIGHT : THEME_DARK;
-        localStorage.setItem(STORAGE_KEY, next);
-        applyTheme(next);
-        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
-      }
-
-      window.toggleTheme = toggleTheme;
-
-      function initTheme() {
-        const theme = getCurrentTheme();
-        applyTheme(theme);
-      }
-
-      initTheme();
-
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-        if (!localStorage.getItem(STORAGE_KEY)) {
-          applyTheme(e.matches ? THEME_DARK : THEME_LIGHT);
-        }
-      });
-    })();
-
     // ============================================
     // LOGIN HANDLER
     // ============================================

@@ -1,33 +1,38 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Detail Laporan — ThreatLens</title>
+  <!-- Tema Terpusat: dark/light mode -->
+  <link rel="stylesheet" href="../../css/theme.css">
+  <script src="../../js/theme.js"></script>
+
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            'tl-bg':        '#080b10',
-            'tl-surface':   '#111820',
-            'tl-surface-2': '#0d1218',
-            'tl-border':    '#1a2332',
-            'tl-border-light': '#253042',
-            'tl-red':       '#ff2d2d',
-            'tl-red-dim':   '#ff2d2d33',
-            'tl-cyan':      '#00e5ff',
-            'tl-cyan-dim':  '#00e5ff33',
-            'tl-orange':    '#ff7c2d',
-            'tl-orange-dim':'#ff7c2d33',
-            'tl-green':     '#00ff9c',
-            'tl-green-dim': '#00ff9c33',
-            'tl-yellow':    '#ffc107',
-            'tl-muted':     '#5a6070',
-            'tl-text':      '#e8eaf0',
-            'tl-text-dim':  '#8a90a0',
+            'tl-bg':           'rgb(var(--tl-bg-rgb) / <alpha-value>)',
+            'tl-surface':      'rgb(var(--tl-surface-rgb) / <alpha-value>)',
+            'tl-surface-2':    'rgb(var(--tl-surface2-rgb) / <alpha-value>)',
+            'tl-border':       'rgb(var(--tl-border-rgb) / <alpha-value>)',
+            'tl-border-light': 'rgb(var(--tl-border-light-rgb) / <alpha-value>)',
+            'tl-red':          'rgb(var(--tl-red-rgb) / <alpha-value>)',
+            'tl-red-dim':      'rgb(var(--tl-red-rgb) / 0.15)',
+            'tl-cyan':         'rgb(var(--tl-cyan-rgb) / <alpha-value>)',
+            'tl-cyan-dim':     'rgb(var(--tl-cyan-rgb) / 0.15)',
+            'tl-orange':       'rgb(var(--tl-orange-rgb) / <alpha-value>)',
+            'tl-orange-dim':   'rgb(var(--tl-orange-rgb) / 0.15)',
+            'tl-green':        'rgb(var(--tl-green-rgb) / <alpha-value>)',
+            'tl-green-dim':    'rgb(var(--tl-green-rgb) / 0.15)',
+            'tl-yellow':       'rgb(var(--tl-yellow-rgb) / <alpha-value>)',
+            'tl-muted':        'rgb(var(--tl-muted-rgb) / <alpha-value>)',
+            'tl-text':         'rgb(var(--tl-text-rgb) / <alpha-value>)',
+            'tl-text-dim':     'rgb(var(--tl-text-dim-rgb) / <alpha-value>)',
           },
           fontFamily: {
             'syne': ['Syne', 'sans-serif'],
@@ -44,9 +49,9 @@
 
   <style>
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #080b10; }
-    ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #253042; }
+    ::-webkit-scrollbar-track { background: var(--tl-scroll-track); }
+    ::-webkit-scrollbar-thumb { background: var(--tl-scroll-thumb); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--tl-scroll-hover); }
 
     .scanline-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
