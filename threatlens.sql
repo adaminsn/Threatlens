@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Waktu pembuatan: 18 Jun 2026 pada 02.38
--- Versi server: 8.4.3
--- Versi PHP: 8.3.16
+-- Generation Time: Jul 19, 2026 at 08:32 AM
+-- Server version: 8.4.3
+-- PHP Version: 8.3.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -24,7 +24,7 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `badges`
+-- Table structure for table `badges`
 --
 
 CREATE TABLE `badges` (
@@ -38,7 +38,7 @@ CREATE TABLE `badges` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `comments`
+-- Table structure for table `comments`
 --
 
 CREATE TABLE `comments` (
@@ -50,7 +50,7 @@ CREATE TABLE `comments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data untuk tabel `comments`
+-- Dumping data for table `comments`
 --
 
 INSERT INTO `comments` (`id`, `user_id`, `threat_id`, `content`, `created_at`) VALUES
@@ -59,7 +59,32 @@ INSERT INTO `comments` (`id`, `user_id`, `threat_id`, `content`, `created_at`) V
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `settings`
+-- Table structure for table `password_resets`
+--
+
+CREATE TABLE `password_resets` (
+  `id` int NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `token` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `password_resets`
+--
+
+INSERT INTO `password_resets` (`id`, `email`, `token`, `expires_at`, `created_at`) VALUES
+(1, 'adaminsaan24@gmail.com', '3f0defc6980942ecaafc73fe9aaaad9d6657effe783b643ed5d0ab2de0839c39', '2026-06-18 11:54:35', '2026-06-18 03:54:34'),
+(2, 'adaminsaan24@gmail.com', '6ddf022ba9e584fd102950f3553f5b41785869aa1bc3947b6ff61c4fd25ce139', '2026-06-19 06:58:16', '2026-06-18 22:58:16'),
+(3, 'adaminsaan24@gmail.com', 'b4be11a60b9b883e0cfb07819ca0a60c7e7ad7c652c6a9fdc8e9cd72dc4b55d2', '2026-06-19 09:45:00', '2026-06-19 01:45:00'),
+(4, 'adaminsaan24@gmail.com', '219f86d8a91887e6feb5c0abdd7407629287aa8bf1d0fbedebfbc2c0313cb278', '2026-06-19 09:54:15', '2026-06-19 01:54:15'),
+(5, 'adaminsaan24@gmail.com', '6934a5d52fb21620e68a18cc2ea49f26b5b314cd95cb82a71e5008ac5b7fb7d5', '2026-07-19 16:19:11', '2026-07-19 08:19:11');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `settings`
 --
 
 CREATE TABLE `settings` (
@@ -71,7 +96,7 @@ CREATE TABLE `settings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data untuk tabel `settings`
+-- Dumping data for table `settings`
 --
 
 INSERT INTO `settings` (`id`, `site_name`, `maintenance_mode`, `report_cooldown`, `updated_at`) VALUES
@@ -80,7 +105,7 @@ INSERT INTO `settings` (`id`, `site_name`, `maintenance_mode`, `report_cooldown`
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `threats`
+-- Table structure for table `threats`
 --
 
 CREATE TABLE `threats` (
@@ -103,7 +128,7 @@ CREATE TABLE `threats` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data untuk tabel `threats`
+-- Dumping data for table `threats`
 --
 
 INSERT INTO `threats` (`id`, `user_id`, `title`, `indicator`, `type`, `category`, `description`, `status`, `verified`, `virustotal_result`, `created_at`, `verification_count`, `verification_list`, `vote_score`, `vote_count_total`, `pending_until`) VALUES
@@ -120,7 +145,7 @@ INSERT INTO `threats` (`id`, `user_id`, `title`, `indicator`, `type`, `category`
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `threat_verifications`
+-- Table structure for table `threat_verifications`
 --
 
 CREATE TABLE `threat_verifications` (
@@ -131,7 +156,7 @@ CREATE TABLE `threat_verifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data untuk tabel `threat_verifications`
+-- Dumping data for table `threat_verifications`
 --
 
 INSERT INTO `threat_verifications` (`id`, `threat_id`, `verifier_id`, `verified_at`) VALUES
@@ -154,7 +179,7 @@ INSERT INTO `threat_verifications` (`id`, `threat_id`, `verifier_id`, `verified_
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -171,39 +196,26 @@ CREATE TABLE `users` (
   `bio` text,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `last_activity` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `email_verified` tinyint DEFAULT '0'
+  `email_verified` tinyint DEFAULT '0',
+  `last_activity_device` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data untuk tabel `users`
+-- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `reputation`, `level`, `total_points`, `xp`, `avatar`, `bio`, `created_at`, `last_activity`, `email_verified`) VALUES
-(1, 'admin', 'admin@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 9999, 100, 0, 0, NULL, 'Founder & CEO of ThreatLens. Cybersecurity expert with 15+ years experience.', '2026-05-23 03:07:07', '2026-06-13 10:58:57', 1),
-(2, 'testuser', 'test@gmail.com', '$2b$10$JHfEV28yirJubrXgxcBd8eFs0QnumD/iucrwr9J1xjOhZACxF1Zoy', 'user', 353, 4, 0, 0, NULL, 'Security enthusiast learning about threat hunting and malware analysis.', '2026-04-23 22:52:17', '2026-06-13 09:57:06', 0),
-(3, 'adaminsn_', 'adaminsaan24@gmail.com', '$2b$10$NMe7vMih8.i9yA6S4D9nDO1FAVIE88hok2mAWXmpMGCqBcYz/2OlO', 'user', 7010, 71, 0, 0, '/uploads/avatars/user-3-1781348777980-774204498.jpeg', 'this is nine one one, what is your emergency?.', '2026-05-21 03:31:54', '2026-06-16 09:46:06', 1),
-(4, 'CyberVanguard', 'cyber@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8520, 86, 0, 0, NULL, '🏆 Elite Threat Hunter | 5+ years experience', '2026-05-23 03:49:05', '2026-05-23 11:20:21', 0),
-(5, 'NetShield', 'netshield@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 7820, 79, 0, 0, NULL, '🛡️ Network Security Expert', '2026-05-23 03:49:05', '2026-05-23 11:20:50', 0),
-(6, 'DarkTrace', 'darktrace@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 7220, 73, 0, 0, NULL, '🔍 Advanced Threat Detection', '2026-05-23 03:49:05', '2026-05-23 11:21:11', 0),
-(7, 'MalwareKiller', 'malwarekiller@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6820, 69, 0, 0, NULL, '🦠 Malware Analyst', '2026-05-23 03:49:05', '2026-05-23 11:21:31', 0),
-(8, 'PhishFinder', 'phishfinder@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6586, 66, 0, 0, NULL, '🎣 Phishing Specialist', '2026-05-23 03:49:05', '2026-05-23 11:40:26', 0),
-(9, 'DDoSDefender', 'ddosdefender@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 6000, 60, 0, 0, NULL, '⚔️ DDoS Mitigation Expert', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
-(10, 'ZeroDayHunter', 'zeroday@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 5500, 55, 0, 0, NULL, '💀 Zero Day Vulnerability Hunter', '2026-05-23 03:49:05', '2026-05-23 03:58:08', 0),
-(11, 'RansomStop', 'ransomstop@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 5200, 52, 0, 0, NULL, '🔒 Ransomware Fighter', '2026-05-23 03:49:05', '2026-05-23 03:51:10', 0),
-(12, 'SecurityRookie', 'rookie@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 4500, 45, 0, 0, NULL, '🔰 Security Enthusiast', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
-(13, 'BugHunter', 'bug@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 3800, 38, 0, 0, NULL, '🐛 Bug Bounty Hunter', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
-(14, 'PacketSniffer', 'packet@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 3000, 30, 0, 0, NULL, '📡 Network Analyst', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
-(15, 'FirewallGuard', 'firewall@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 2500, 25, 0, 0, NULL, '🔥 Firewall Administrator', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
-(16, 'LogWatcher', 'logwatcher@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1800, 18, 0, 0, NULL, '📋 Log Monitoring', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
-(17, 'NewHunter', 'newhunter@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 1000, 10, 0, 0, NULL, '🌱 Beginner Threat Hunter', '2026-05-23 03:49:05', '2026-05-23 03:49:05', 0),
-(18, 'JustJoined', 'justjoined@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 500, 5, 0, 0, NULL, '✨ New Member', '2026-05-23 03:49:06', '2026-05-23 03:49:06', 0),
-(19, 'lioraa', 'liora@gmail.com', '$2b$10$egJPyfBTdeYtIJu.1abR9uFwaghDV7zG/lo0JilArG94DsPPMw1AW', 'user', 10, 1, 0, 0, NULL, NULL, '2026-06-13 10:00:33', '2026-06-13 10:31:57', 1),
-(25, 'LeoxLewa', 'leomessixlewa@gmail.com', '$2b$10$EKyjq8ZOkvbmN1UClkRa4OWD0WCHfdQKUrzz.qazqtRCQzzN.c7Uu', 'user', 0, 1, 0, 0, NULL, NULL, '2026-06-13 11:39:36', '2026-06-13 11:40:25', 1);
+INSERT INTO `users` (`id`, `username`, `email`, `password`, `role`, `reputation`, `level`, `total_points`, `xp`, `avatar`, `bio`, `created_at`, `last_activity`, `email_verified`, `last_activity_device`) VALUES
+(1, 'admin', 'admin@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 9999, 100, 0, 0, NULL, 'Founder & CEO of ThreatLens. Cybersecurity expert with 15+ years experience.', '2026-05-23 03:07:07', '2026-07-19 07:35:14', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36'),
+(2, 'testuser', 'test@gmail.com', '$2b$10$JHfEV28yirJubrXgxcBd8eFs0QnumD/iucrwr9J1xjOhZACxF1Zoy', 'user', 353, 4, 0, 0, NULL, 'Security enthusiast learning about threat hunting and malware analysis.', '2026-04-23 22:52:17', '2026-06-13 09:57:06', 0, NULL),
+(3, 'adaminsn_', 'adaminsaan24@gmail.com', '$2b$10$NMe7vMih8.i9yA6S4D9nDO1FAVIE88hok2mAWXmpMGCqBcYz/2OlO', 'user', 7010, 71, 0, 0, '/uploads/avatars/user-3-1781348777980-774204498.jpeg', 'this is nine one one, what is your emergency?.', '2026-05-21 03:31:54', '2026-07-19 07:59:34', 1, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36'),
+(4, 'CyberVanguard', 'cyber@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 8520, 86, 0, 0, NULL, '🏆 Elite Threat Hunter | 5+ years experience', '2026-05-23 03:49:05', '2026-05-23 11:20:21', 0, NULL),
+(5, 'NetShield', 'netshield@threatlens.com', '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user', 7820, 79, 0, 0, NULL, '🛡️ Network Security Expert', '2026-05-23 03:49:05', '2026-05-23 11:20:50', 0, NULL),
+(19, 'lioraa', 'liora@gmail.com', '$2b$10$egJPyfBTdeYtIJu.1abR9uFwaghDV7zG/lo0JilArG94DsPPMw1AW', 'user', 10, 1, 0, 0, NULL, NULL, '2026-06-13 10:00:33', '2026-06-13 10:31:57', 1, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `user_achievements`
+-- Table structure for table `user_achievements`
 --
 
 CREATE TABLE `user_achievements` (
@@ -216,7 +228,7 @@ CREATE TABLE `user_achievements` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `votes`
+-- Table structure for table `votes`
 --
 
 CREATE TABLE `votes` (
@@ -229,7 +241,7 @@ CREATE TABLE `votes` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- Dumping data untuk tabel `votes`
+-- Dumping data for table `votes`
 --
 
 INSERT INTO `votes` (`id`, `user_id`, `threat_id`, `vote`, `weight`, `created_at`) VALUES
@@ -256,14 +268,14 @@ INSERT INTO `votes` (`id`, `user_id`, `threat_id`, `vote`, `weight`, `created_at
 --
 
 --
--- Indeks untuk tabel `badges`
+-- Indexes for table `badges`
 --
 ALTER TABLE `badges`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indeks untuk tabel `comments`
+-- Indexes for table `comments`
 --
 ALTER TABLE `comments`
   ADD PRIMARY KEY (`id`),
@@ -271,20 +283,28 @@ ALTER TABLE `comments`
   ADD KEY `threat_id` (`threat_id`);
 
 --
--- Indeks untuk tabel `settings`
+-- Indexes for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_token` (`token`),
+  ADD KEY `idx_email` (`email`);
+
+--
+-- Indexes for table `settings`
 --
 ALTER TABLE `settings`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indeks untuk tabel `threats`
+-- Indexes for table `threats`
 --
 ALTER TABLE `threats`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indeks untuk tabel `threat_verifications`
+-- Indexes for table `threat_verifications`
 --
 ALTER TABLE `threat_verifications`
   ADD PRIMARY KEY (`id`),
@@ -292,7 +312,7 @@ ALTER TABLE `threat_verifications`
   ADD KEY `verifier_id` (`verifier_id`);
 
 --
--- Indeks untuk tabel `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
@@ -300,14 +320,14 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- Indeks untuk tabel `user_achievements`
+-- Indexes for table `user_achievements`
 --
 ALTER TABLE `user_achievements`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_achievement` (`user_id`,`achievement_type`);
 
 --
--- Indeks untuk tabel `votes`
+-- Indexes for table `votes`
 --
 ALTER TABLE `votes`
   ADD PRIMARY KEY (`id`),
@@ -315,89 +335,95 @@ ALTER TABLE `votes`
   ADD KEY `threat_id` (`threat_id`);
 
 --
--- AUTO_INCREMENT untuk tabel yang dibuang
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT untuk tabel `badges`
+-- AUTO_INCREMENT for table `badges`
 --
 ALTER TABLE `badges`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT untuk tabel `comments`
+-- AUTO_INCREMENT for table `comments`
 --
 ALTER TABLE `comments`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT untuk tabel `threats`
+-- AUTO_INCREMENT for table `password_resets`
+--
+ALTER TABLE `password_resets`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `threats`
 --
 ALTER TABLE `threats`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
--- AUTO_INCREMENT untuk tabel `threat_verifications`
+-- AUTO_INCREMENT for table `threat_verifications`
 --
 ALTER TABLE `threat_verifications`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
--- AUTO_INCREMENT untuk tabel `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
--- AUTO_INCREMENT untuk tabel `user_achievements`
+-- AUTO_INCREMENT for table `user_achievements`
 --
 ALTER TABLE `user_achievements`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT untuk tabel `votes`
+-- AUTO_INCREMENT for table `votes`
 --
 ALTER TABLE `votes`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
--- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
+-- Constraints for dumped tables
 --
 
 --
--- Ketidakleluasaan untuk tabel `badges`
+-- Constraints for table `badges`
 --
 ALTER TABLE `badges`
   ADD CONSTRAINT `badges_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
--- Ketidakleluasaan untuk tabel `comments`
+-- Constraints for table `comments`
 --
 ALTER TABLE `comments`
   ADD CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`threat_id`) REFERENCES `threats` (`id`);
 
 --
--- Ketidakleluasaan untuk tabel `threats`
+-- Constraints for table `threats`
 --
 ALTER TABLE `threats`
   ADD CONSTRAINT `threats_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
--- Ketidakleluasaan untuk tabel `threat_verifications`
+-- Constraints for table `threat_verifications`
 --
 ALTER TABLE `threat_verifications`
   ADD CONSTRAINT `threat_verifications_ibfk_1` FOREIGN KEY (`threat_id`) REFERENCES `threats` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `threat_verifications_ibfk_2` FOREIGN KEY (`verifier_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `user_achievements`
+-- Constraints for table `user_achievements`
 --
 ALTER TABLE `user_achievements`
   ADD CONSTRAINT `user_achievements_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `votes`
+-- Constraints for table `votes`
 --
 ALTER TABLE `votes`
   ADD CONSTRAINT `votes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),

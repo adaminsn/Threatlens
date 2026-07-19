@@ -31,9 +31,9 @@ desktop.ini
 *~
 
 # Database backup (jangan commit file SQL besar)
-*.sql
-*.sql.gz
-*.dump
+#*.sql
+#*.sql.gz
+#*.dump
 
 # Temp files
 tmp/
