@@ -1,0 +1,223 @@
+/* ============================================================
+   ThreatLens — Centralized Theme CSS Variables
+   Harus dimuat SEBELUM Tailwind CDN di setiap halaman.
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────
+   DARK MODE (default)
+   Nilai dalam format "R G B" agar Tailwind opacity modifier
+   (bg-tl-bg/90, dll.) tetap bekerja.
+───────────────────────────────────────────────────────── */
+:root {
+  /* Background layers */
+  --tl-bg-rgb:           8   11  16;   /* #080b10 */
+  --tl-surface-rgb:      17  24  32;   /* #111820 */
+  --tl-surface2-rgb:     13  18  24;   /* #0d1218 */
+  --tl-elevated-rgb:     26  35  50;   /* #1a2332 */
+
+  /* Borders */
+  --tl-border-rgb:       26  35  50;   /* #1a2332 */
+  --tl-border-light-rgb: 37  48  66;   /* #253042 */
+
+  /* Text */
+  --tl-text-rgb:         232 234 240;  /* #e8eaf0 */
+  --tl-text-dim-rgb:     138 144 160;  /* #8a90a0 */
+  --tl-muted-rgb:        90  96  112;  /* #5a6070 */
+
+  /* Brand */
+  --tl-red-rgb:          255 45  45;   /* #ff2d2d */
+  --tl-cyan-rgb:         0   229 255;  /* #00e5ff */
+  --tl-orange-rgb:       255 124 45;   /* #ff7c2d */
+  --tl-green-rgb:        0   255 156;  /* #00ff9c */
+  --tl-yellow-rgb:       255 193 7;    /* #ffc107 */
+
+  /* ─ Convenient helpers (full color string) ─ */
+  --tl-bg:           rgb(var(--tl-bg-rgb));
+  --tl-surface:      rgb(var(--tl-surface-rgb));
+  --tl-surface-2:    rgb(var(--tl-surface2-rgb));
+  --tl-elevated:     rgb(var(--tl-elevated-rgb));
+  --tl-border:       rgb(var(--tl-border-rgb));
+  --tl-border-light: rgb(var(--tl-border-light-rgb));
+  --tl-text:         rgb(var(--tl-text-rgb));
+  --tl-text-dim:     rgb(var(--tl-text-dim-rgb));
+  --tl-muted:        rgb(var(--tl-muted-rgb));
+  --tl-red:          rgb(var(--tl-red-rgb));
+  --tl-cyan:         rgb(var(--tl-cyan-rgb));
+  --tl-orange:       rgb(var(--tl-orange-rgb));
+  --tl-green:        rgb(var(--tl-green-rgb));
+  --tl-yellow:       rgb(var(--tl-yellow-rgb));
+
+  /* Shadows */
+  --tl-shadow-sm:   0 1px 3px rgba(0,0,0,0.35);
+  --tl-shadow-md:   0 4px 12px rgba(0,0,0,0.45);
+  --tl-shadow-lg:   0 8px 32px rgba(0,0,0,0.55);
+  --tl-shadow-glow: 0 0 20px rgba(255,45,45,0.15);
+
+  /* Scrollbar */
+  --tl-scroll-track: #080b10;
+  --tl-scroll-thumb: #1a2332;
+  --tl-scroll-hover: #253042;
+
+  /* ─ Auth-page aliases (login / register / forgot) ─ */
+  --bg-primary:   var(--tl-bg);
+  --bg-secondary: var(--tl-surface);
+  --bg-card:      var(--tl-surface);
+  --bg-input:     var(--tl-surface-2);
+  --bg-elevated:  var(--tl-elevated);
+  --border-color: var(--tl-border);
+  --border-hover: var(--tl-border-light);
+  --text-primary: var(--tl-text);
+  --text-secondary: var(--tl-text-dim);
+  --text-muted:   var(--tl-muted);
+  --text-dim:     var(--tl-text-dim);
+  --red:          var(--tl-red);
+  --red-dim:      rgba(var(--tl-red-rgb), 0.18);
+  --red-soft:     #ff6b6b;
+  --cyan:         var(--tl-cyan);
+  --cyan-soft:    #7eefff;
+  --orange:       var(--tl-orange);
+  --green:        var(--tl-green);
+  --yellow:       var(--tl-yellow);
+  --shadow-sm:    var(--tl-shadow-sm);
+  --shadow-md:    var(--tl-shadow-md);
+  --shadow-glow-red: var(--tl-shadow-glow);
+
+  /* Fonts */
+  --font-body: 'Syne', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --transition-base: 0.3s ease;
+  --transition-fast: 0.2s ease;
+}
+
+/* ─────────────────────────────────────────────────────────
+   LIGHT MODE — aktif saat html.light
+───────────────────────────────────────────────────────── */
+html.light {
+  /* Background layers */
+  --tl-bg-rgb:           240 242 245;  /* #f0f2f5 */
+  --tl-surface-rgb:      255 255 255;  /* #ffffff */
+  --tl-surface2-rgb:     238 241 245;  /* #eef1f5 */
+  --tl-elevated-rgb:     248 249 250;  /* #f8f9fa */
+
+  /* Borders */
+  --tl-border-rgb:       209 213 219;  /* #d1d5db */
+  --tl-border-light-rgb: 156 163 175;  /* #9ca3af */
+
+  /* Text */
+  --tl-text-rgb:         26  26  46;   /* #1a1a2e */
+  --tl-text-dim-rgb:     55  65  81;   /* #374151 */
+  --tl-muted-rgb:        107 114 128;  /* #6b7280 */
+
+  /* Brand — sedikit lebih gelap untuk kontras di bg putih */
+  --tl-red-rgb:          220 38  38;   /* #dc2626 */
+  --tl-cyan-rgb:         8   145 178;  /* #0891b2 */
+  --tl-orange-rgb:       234 88  12;   /* #ea580c */
+  --tl-green-rgb:        5   150 105;  /* #059669 */
+  --tl-yellow-rgb:       217 119 6;    /* #d97706 */
+
+  /* Shadows */
+  --tl-shadow-sm:   0 1px 3px rgba(0,0,0,0.08);
+  --tl-shadow-md:   0 4px 12px rgba(0,0,0,0.1);
+  --tl-shadow-lg:   0 8px 32px rgba(0,0,0,0.15);
+  --tl-shadow-glow: 0 0 20px rgba(220,38,38,0.1);
+
+  /* Scrollbar */
+  --tl-scroll-track: #f0f2f5;
+  --tl-scroll-thumb: #d1d5db;
+  --tl-scroll-hover: #9ca3af;
+
+  /* Auth aliases */
+  --red-soft: #ef4444;
+  --cyan-soft: #22d3ee;
+}
+
+/* ─────────────────────────────────────────────────────────
+   SCROLLBAR — pakai variabel sehingga ikut tema
+───────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--tl-scroll-track); }
+::-webkit-scrollbar-thumb { background: var(--tl-scroll-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--tl-scroll-hover); }
+
+/* ─────────────────────────────────────────────────────────
+   SMOOTH TRANSITION SAAT GANTI TEMA
+───────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.3s ease,
+    border-color     0.3s ease,
+    color            0.25s ease,
+    box-shadow       0.3s ease;
+}
+
+/* Elemen animasi tidak ikut transisi tema */
+.no-theme-transition,
+.no-theme-transition * {
+  transition: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────
+   FLOATING THEME TOGGLE BUTTON
+   Diinject oleh theme.js ke semua halaman secara otomatis
+───────────────────────────────────────────────────────── */
+#tl-theme-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-border);
+  color: var(--tl-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: var(--tl-shadow-md);
+  transition: border-color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease !important;
+}
+
+#tl-theme-float:hover {
+  border-color: var(--tl-red);
+  transform: scale(1.12);
+  box-shadow: var(--tl-shadow-glow), var(--tl-shadow-md);
+}
+
+/* Sembunyikan floating button jika halaman sudah punya toggle sendiri */
+body.has-theme-toggle #tl-theme-float {
+  display: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   LIGHT MODE — Override scanline / background noise
+   (efek dark-only yang harus dinonaktifkan di light mode)
+───────────────────────────────────────────────────────── */
+html.light .scanline-overlay { display: none; }
+html.light .hex-pattern { opacity: 0.15; }
+
+/* ─────────────────────────────────────────────────────────
+   AUTH PAGES — Light mode form fixes
+───────────────────────────────────────────────────────── */
+html.light .login-card,
+html.light .auth-card {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.06);
+}
+
+html.light .input-group input::placeholder {
+  color: var(--tl-muted);
+}
+
+/* ─────────────────────────────────────────────────────────
+   GRID BACKGROUND — Light mode adjust
+───────────────────────────────────────────────────────── */
+html.light .grid-bg {
+  background-image:
+    linear-gradient(rgba(220,38,38,0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(220,38,38,0.06) 1px, transparent 1px);
+  opacity: 0.4;
+}
